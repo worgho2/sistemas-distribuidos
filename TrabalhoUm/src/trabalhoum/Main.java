@@ -4,6 +4,9 @@
  */
 package trabalhoum;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.Scanner;
 
 /**
@@ -40,7 +43,7 @@ public class Main {
             Peer peer = new Peer(
                     multicastAddress,
                     multicastPort,
-                    processesPorts,
+                    new LinkedList<Integer>(Arrays.asList(processesPorts)),
                     processesPorts[processId],
                     processesPorts[processesPorts.length - 1]);
 
@@ -55,9 +58,7 @@ public class Main {
             System.out.println("");
             System.out.println("Press 'Enter' to start the peer");
 
-            Scanner scanner = new Scanner(System.in);
-            scanner.nextLine();
-            scanner.close();
+            new Scanner(System.in).nextLine();
 
             System.out.print("\033[H\033[2J");
 

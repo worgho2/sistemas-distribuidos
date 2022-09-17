@@ -29,7 +29,7 @@ public class MulticastHandler {
 
     public enum MulticastMessageType {
         NEW_COORDINATOR,
-        COORDINATOR_HELO,
+        COORDINATOR_HELLO,
         UNKNOWN
     }
 
@@ -86,9 +86,23 @@ public class MulticastHandler {
 
             return new MulticastMessage(type, datagramPacket.getPort(), content);
         } catch (IOException e) {
-            System.out.println("MulticastHandler.waitForMessage exception: " + e.getMessage());
+            if (e.getMessage() != "Socket closed") {
+                System.out.println("MulticastHandler.waitForMessage exception: " + e.getMessage());
+            }
+
             return new MulticastMessage(MulticastMessageType.UNKNOWN, 0, "");
         }
+    }
+
+    public void restart() {
+        try {
+            close();
+            multicastSocket = new MulticastSocket(port);
+            multicastSocket.joinGroup(inetAddress);
+        } catch (Exception e) {
+            System.out.println("Falha ");
+        }
+
     }
 
     public void close() {
