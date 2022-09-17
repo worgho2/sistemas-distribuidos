@@ -17,7 +17,7 @@ public class MulticastPeer {
             for (int i = 0; i < 3; i++) { // get messages from others in group
                 DatagramPacket messageIn = new DatagramPacket(buffer, buffer.length);
                 s.receive(messageIn);
-                System.out.println("Received:" + new String(messageIn.getData()));
+                System.out.println("Received:" + messageIn.getPort());
             }
             s.leaveGroup(group);
         } catch (SocketException e) {

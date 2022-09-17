@@ -8,27 +8,62 @@ import java.net.*;
 import java.util.*;
 import java.io.*;
 
+import trabalhoum.MulticastHandler.MulticastMessage;
+import trabalhoum.MulticastHandler.MulticastMessageType;
+
 /**
  *
  * @author otavio
  */
 public class Peer {
+    String multicastAddress;
+    Integer multicastPort;
+
     Integer[] processesPorts;
     Integer port;
-    Integer currentCoordinator;
+    Integer currentCoordinatorPort;
 
-    public Peer(String multicastAddress, Integer[] processesPorts, Integer port, Integer currentCoordinator) {
+    MulticastHandler multicastHandler;
 
+    Timer sendMulticastHelloTimer;
+    boolean isSendMulticastHelloTimer;
+
+    public Peer(String multicastAddress, Integer multicastPort, Integer[] processesPorts, Integer port,
+            Integer currentCoordinatorPort) {
+        this.multicastAddress = multicastAddress;
+        this.multicastPort = multicastPort;
         this.processesPorts = processesPorts;
         this.port = port;
-        this.currentCoordinator = currentCoordinator;
+        this.currentCoordinatorPort = currentCoordinatorPort;
+
+        multicastHandler = new MulticastHandler(this.multicastAddress, this.multicastPort);
+
+        sendMulticastHelloTimer = new Timer(true);
+        isSendMulticastHelloTimer = false;
     }
 
-    private void sendMulticastHello() {
-
+    class SendMulticastHello extends TimerTask {
+        public void run() {
+            multicastHandler.send(MulticastMessageType.COORDINATOR_HELO, "Take it easy, I'm here!");
+        }
     }
 
     public void start() {
+        while (true) {
 
+            if (port == currentCoordinatorPort) {
+                if (isSendMulticastHelloTimer == false) {
+                    sendMulticastHelloTimer.scheduleAtFixedRate(new SendMulticastHello(), 0, 2000);
+                    isSendMulticastHelloTimer = true;
+                } else {
+                    MulticastMessage message = multicastHandler.waitForMessage();
+                    System.out.println(message);
+                }
+            } else {
+                MulticastMessage message = multicastHandler.waitForMessage();
+                System.out.println(message);
+            }
+
+        }
     }
 }

@@ -12,6 +12,7 @@ import java.util.Scanner;
  */
 public class Main {
     private static final String multicastAddress = "228.5.6.7";
+    private static final Integer multicastPort = 6789;
     private static final Integer[] processesPorts = {
             5101,
             5102,
@@ -38,6 +39,7 @@ public class Main {
 
             Peer peer = new Peer(
                     multicastAddress,
+                    multicastPort,
                     processesPorts,
                     processesPorts[processId],
                     processesPorts[processesPorts.length - 1]);
