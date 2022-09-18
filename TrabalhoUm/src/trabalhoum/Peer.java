@@ -185,16 +185,32 @@ public class Peer {
                         inElection = false;
                     }
                 };
-                timer2.schedule(task2, 5000);
+                timer2.schedule(task2, 7000);
 
-                if (hasHigherId()) {
+                if (hasHigherId() && !shouldSkipElectionStart) {
                     Logger.info("Process has higher id, becaming coordinator directly");
                     shouldStartNewElection = false;
                     currentCoordinatorPort = port;
                     isSendMulticastHelloTimerActive = false;
                     inElection = false;
                 } else {
-                    Logger.debug("Waiting for first TCP %s message.", TCPMessageType.ELECTION_REPLY);
+                    Logger.debug("Waiting for first TCP %s message or Multicast %s message",
+                            TCPMessageType.ELECTION_REPLY, MulticastMessageType.NEW_COORDINATOR);
+
+                    Timer timerAux = new Timer();
+                    TimerTask taskAux = new TimerTask() {
+                        @Override
+                        public void run() {
+                            MulticastMessage message = multicastHandler.waitForMessage();
+                            if (message.type == MulticastMessageType.NEW_COORDINATOR) {
+                                Logger.info("Received Multicast %s message", MulticastMessageType.NEW_COORDINATOR);
+                                currentCoordinatorPort = message.senderUnicastPort;
+                                inElection = false;
+                            }
+                        }
+                    };
+                    timerAux.schedule(taskAux, 0);
+
                     electionReplyBuffer.clear();
                     while (electionReplyBuffer.size() == 0) {
                         // Making sure the loop can me exited
