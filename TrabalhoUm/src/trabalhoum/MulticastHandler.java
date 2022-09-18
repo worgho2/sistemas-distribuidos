@@ -4,6 +4,7 @@
  */
 package trabalhoum;
 
+import trabalhoum.MulticastMessage.MulticastMessageType;
 import java.net.*;
 import java.io.*;
 
@@ -13,12 +14,14 @@ import java.io.*;
  */
 public class MulticastHandler {
     private Integer port;
+    private Integer senderUnicastPort;
     private InetAddress inetAddress;
     private MulticastSocket multicastSocket;
 
-    public MulticastHandler(String address, Integer port) {
+    public MulticastHandler(String address, Integer port, Integer senderUnicastPort) {
         try {
             this.port = port;
+            this.senderUnicastPort = senderUnicastPort;
             inetAddress = InetAddress.getByName(address);
             multicastSocket = new MulticastSocket(port);
             multicastSocket.joinGroup(inetAddress);
@@ -27,34 +30,11 @@ public class MulticastHandler {
         }
     }
 
-    public enum MulticastMessageType {
-        NEW_COORDINATOR,
-        COORDINATOR_HELLO,
-        UNKNOWN
-    }
-
-    public class MulticastMessage {
-        MulticastMessageType type;
-        Integer senderPort;
-        String content;
-
-        public MulticastMessage(MulticastMessageType type, Integer senderPort, String content) {
-            this.type = type;
-            this.senderPort = senderPort;
-            this.content = content;
-        }
-
-        @Override
-        public String toString() {
-            return String.format("MulticastMessage (port=%s type=%s content=%s)", senderPort, type, content);
-        }
-    }
-
-    public void send(MulticastMessageType type, String content) {
+    public void send(MulticastMessageType type) {
         try {
-            String payload = new String(type.toString() + "@" + content);
-            byte[] buffer = payload.getBytes();
-            DatagramPacket datagramPacket = new DatagramPacket(buffer, buffer.length, inetAddress, port);
+            MulticastMessage message = new MulticastMessage(type, this.senderUnicastPort);
+            byte[] buffer = message.toPayload().getBytes();
+            DatagramPacket datagramPacket = new DatagramPacket(buffer, buffer.length, this.inetAddress, this.port);
             multicastSocket.send(datagramPacket);
         } catch (IOException e) {
             System.out.println("MulticastHandler.send exception: " + e.getMessage());
@@ -67,30 +47,9 @@ public class MulticastHandler {
             DatagramPacket datagramPacket = new DatagramPacket(buffer, buffer.length);
             multicastSocket.receive(datagramPacket);
             String payload = new String(datagramPacket.getData());
-            String[] components = payload.split("@");
-
-            MulticastMessageType type;
-            String content;
-
-            if (components.length != 2) {
-                type = MulticastMessageType.UNKNOWN;
-                content = payload;
-            } else {
-                content = components[1];
-                try {
-                    type = MulticastMessageType.valueOf(components[0]);
-                } catch (Exception e) {
-                    type = MulticastMessageType.UNKNOWN;
-                }
-            }
-
-            return new MulticastMessage(type, datagramPacket.getPort(), content);
-        } catch (IOException e) {
-            if (e.getMessage() != "Socket closed") {
-                System.out.println("MulticastHandler.waitForMessage exception: " + e.getMessage());
-            }
-
-            return new MulticastMessage(MulticastMessageType.UNKNOWN, 0, "");
+            return new MulticastMessage(payload);
+        } catch (Exception e) {
+            return new MulticastMessage(MulticastMessageType.UNKNOWN, 0);
         }
     }
 
@@ -100,7 +59,7 @@ public class MulticastHandler {
             multicastSocket = new MulticastSocket(port);
             multicastSocket.joinGroup(inetAddress);
         } catch (Exception e) {
-            System.out.println("Falha ");
+            System.out.println("MulticastHandler.restart exception: " + e.getMessage());
         }
 
     }

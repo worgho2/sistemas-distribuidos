@@ -4,6 +4,7 @@
  */
 package trabalhoum;
 
+import trabalhoum.TCPMessage.TCPMessageType;
 import java.net.*;
 import java.io.*;
 
@@ -14,19 +15,22 @@ import java.io.*;
 public class TCPClient {
     private DataOutputStream dataOutputStream;
     private Socket socket;
+    private Integer senderPort;
 
-    public TCPClient(String hostname, int serverPort) {
+    public TCPClient(String hostname, Integer destinationPort, Integer senderPort) {
         try {
-            socket = new Socket(hostname, serverPort);
+            this.senderPort = senderPort;
+            socket = new Socket(hostname, destinationPort);
             dataOutputStream = new DataOutputStream(socket.getOutputStream());
         } catch (IOException e) {
             System.out.println("TCPClient exception: " + e.getMessage());
         }
     }
 
-    public void send(String message) {
+    public void send(TCPMessageType type) {
         try {
-            dataOutputStream.writeUTF(message);
+            TCPMessage message = new TCPMessage(type, this.senderPort);
+            dataOutputStream.writeUTF(message.toPayload());
         } catch (Exception e) {
             System.out.println("TCPClient.send exception: " + e.getMessage());
         }

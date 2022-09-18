@@ -4,6 +4,7 @@
  */
 package trabalhoum;
 
+import trabalhoum.TCPMessage.TCPMessageType;
 import java.net.*;
 import java.io.*;
 
@@ -22,17 +23,15 @@ public class TCPServer {
         }
     }
 
-    public String waitForMessage() {
+    public TCPMessage waitForMessage() {
         try {
             Socket connectionSocket = serverSocket.accept();
             DataInputStream inputStream = new DataInputStream(connectionSocket.getInputStream());
-            String message = inputStream.readUTF();
+            String payload = inputStream.readUTF();
             connectionSocket.close();
-
-            return message;
+            return new TCPMessage(payload);
         } catch (Exception e) {
-            System.out.println("TCPServer.waitForMessage exception: " + e.getMessage());
-            return "";
+            return new TCPMessage(TCPMessageType.UNKNOWN, 0);
         }
     }
 
