@@ -16,14 +16,16 @@ public class TCPClient {
     private DataOutputStream dataOutputStream;
     private Socket socket;
     private Integer senderPort;
+    private Integer destinationPort;
 
     public TCPClient(String hostname, Integer destinationPort, Integer senderPort) {
         try {
+            this.destinationPort = destinationPort;
             this.senderPort = senderPort;
             socket = new Socket(hostname, destinationPort);
             dataOutputStream = new DataOutputStream(socket.getOutputStream());
         } catch (IOException e) {
-            System.out.println("TCPClient exception: " + e.getMessage());
+            Logger.error("Failed starting TCPClient: %s", e.getMessage());
         }
     }
 
@@ -32,7 +34,7 @@ public class TCPClient {
             TCPMessage message = new TCPMessage(type, this.senderPort);
             dataOutputStream.writeUTF(message.toPayload());
         } catch (Exception e) {
-            System.out.println("TCPClient.send exception: " + e.getMessage());
+            Logger.error("Failed sending TCP %s message to %s", type, destinationPort);
         }
     }
 
@@ -40,7 +42,7 @@ public class TCPClient {
         try {
             socket.close();
         } catch (Exception e) {
-            System.out.println("TCPClient.close exception: " + e.getMessage());
+            Logger.error("Failed closing TCPClient: %s ", e.getMessage());
         }
     }
 }

@@ -54,22 +54,29 @@ public class Peer {
         return port == processesPorts.get(processesPorts.size() - 1);
     }
 
+    private boolean hasLowerId() {
+        return port == processesPorts.get(0);
+    }
+
     private void startElection() {
         try {
-            System.out.println("Starting Election");
             shouldStartNewElection = false;
             Integer myIndex = processesPorts.indexOf(port);
 
-            System.out.println("My index position is: " + myIndex);
+            Logger.info("Starting Election");
+            Logger.debug("My Id: %s", myIndex);
+            Logger.debug("Number of Processes: %s", processesPorts.size());
+
             if (myIndex != -1) {
                 for (int i = myIndex + 1; i < processesPorts.size(); i++) {
-                    System.out.println("Sending NEW_ELECTION to " + processesPorts.get(i));
+                    Logger.info("Sending TCP %s message to %s", TCPMessageType.NEW_ELECTION, processesPorts.get(i));
+
                     TCPClient electionClient = new TCPClient("localhost", processesPorts.get(i), port);
                     electionClient.send(TCPMessageType.NEW_ELECTION);
                 }
             }
         } catch (Exception e) {
-            System.out.println("Peer.startElection exception " + e.getMessage());
+            Logger.error("Failed sending TCP messages on election start: %s", e.getMessage());
         }
     }
 
@@ -80,6 +87,9 @@ public class Peer {
                 TCPMessage message = tcpServer.waitForMessage();
 
                 if (message.type == TCPMessageType.NEW_ELECTION) {
+                    Logger.info("Received TCP %s message from %s", message.type, message.senderPort);
+                    Logger.info("Sending TCP %s message to %s", TCPMessageType.ELECTION_REPLY, message.senderPort);
+
                     TCPClient client = new TCPClient("localhost", message.senderPort, port);
                     client.send(TCPMessageType.ELECTION_REPLY);
 
@@ -87,7 +97,7 @@ public class Peer {
                         startElection();
                     }
                 } else if (message.type == TCPMessageType.ELECTION_REPLY) {
-                    System.out.println(String.format("Received %s from %s", message.type, message.senderPort));
+                    Logger.info("Received TCP %s message from %s", message.type, message.senderPort);
                     electionReplyBuffer.add(message);
                 }
             }
@@ -96,6 +106,7 @@ public class Peer {
 
     private class SendMulticastHello extends TimerTask {
         public void run() {
+            Logger.info("Sending Multicast %s message", MulticastMessageType.COORDINATOR_HELLO);
             multicastHandler.send(MulticastMessageType.COORDINATOR_HELLO);
         }
     }
@@ -104,57 +115,62 @@ public class Peer {
         while (true) {
             if (isCoordinator()) {
                 if (isSendMulticastHelloTimerActive == false) {
+                    Logger.info("Sending Multicast %s message", MulticastMessageType.NEW_COORDINATOR);
+
                     multicastHandler.send(MulticastMessageType.NEW_COORDINATOR);
                     sendMulticastHelloTimer.scheduleAtFixedRate(new SendMulticastHello(), 1000, 2000);
                     isSendMulticastHelloTimerActive = true;
                 } else {
                     MulticastMessage message = multicastHandler.waitForMessage();
-                    System.out.println("Received multicast " + message.type);
+                    Logger.debug("Received Multicast %s message", message.type);
                 }
             } else if (!inElection) {
                 Timer timer = new Timer();
                 TimerTask task = new TimerTask() {
                     @Override
                     public void run() {
-                        multicastHandler.restart();
-                        processesPorts.removeIf(n -> (n == currentCoordinatorPort));
+                        Logger.info("Coordinator %s is not live, removing reference and preparing to start election",
+                                currentCoordinatorPort);
+
+                        processesPorts.removeIf(n -> (n.equals(currentCoordinatorPort)));
                         inElection = true;
+                        multicastHandler.restart();
                     }
                 };
                 timer.schedule(task, 4000);
 
+                Logger.debug("Waiting for Multicast %s message", MulticastMessageType.COORDINATOR_HELLO);
                 MulticastMessage message = multicastHandler.waitForMessage();
 
                 try {
                     timer.cancel();
                     task.cancel();
                 } catch (Exception e) {
-                    System.out.println("Failed canceling timer");
+                    Logger.error("Failed stopping timer");
                 }
 
                 if (message.type == MulticastMessageType.COORDINATOR_HELLO) {
-                    System.out.println(String.format("O coordenador (%s) está ativo!", message.senderUnicastPort));
+                    Logger.info("Received Multicast %s message. (Coordinator is live)",
+                            MulticastMessageType.COORDINATOR_HELLO);
                 }
             } else {
                 if (hasHigherId()) {
-                    System.out.println(
-                            "This process has the higher id, starting a election will make it autimatically coordinator");
+                    Logger.debug("Process %s with higher id", port);
+                } else if (hasLowerId()) {
+                    Logger.debug("Process %s with lower id", port);
                 }
-                System.out.println(
-                        String.format(
-                                "The coordenador (%s) has died. Do you want to start a new election [('Enter') yes/no ('any')]?",
-                                currentCoordinatorPort));
+                Logger.input("Do you want to start a election [('Enter') yes/no ('any')]?");
                 String selection = new Scanner(System.in).nextLine();
 
                 shouldStartNewElection = true;
                 boolean shouldSkipElectionStart = false;
 
                 if (!selection.isEmpty()) {
-                    System.out.println("Skipping election start");
+                    Logger.debug("Skipping election start messages");
                     shouldSkipElectionStart = true;
                 }
 
-                if (shouldSkipElectionStart) {
+                if (!shouldSkipElectionStart) {
                     startElection();
                 }
 
@@ -162,7 +178,7 @@ public class Peer {
                 TimerTask task2 = new TimerTask() {
                     @Override
                     public void run() {
-                        System.out.println("No ELECTION_REPLY received. I should be the coordinator");
+                        Logger.info("No response. Becoming the Coordinator");
                         shouldStartNewElection = false;
                         currentCoordinatorPort = port;
                         isSendMulticastHelloTimerActive = false;
@@ -171,15 +187,21 @@ public class Peer {
                 };
                 timer2.schedule(task2, 5000);
 
-                electionReplyBuffer.clear();
-                while (electionReplyBuffer.size() == 0) {
-                    /**
-                     * Making sure the loop can me exited
-                     */
-                    System.out.print(Character.MIN_VALUE);
-                    if (!this.inElection) {
-                        System.out.println("Election has Ended");
-                        break;
+                if (hasHigherId()) {
+                    Logger.info("Process has higher id, becaming coordinator directly");
+                    shouldStartNewElection = false;
+                    currentCoordinatorPort = port;
+                    isSendMulticastHelloTimerActive = false;
+                    inElection = false;
+                } else {
+                    Logger.debug("Waiting for first TCP %s message.", TCPMessageType.ELECTION_REPLY);
+                    electionReplyBuffer.clear();
+                    while (electionReplyBuffer.size() == 0) {
+                        // Making sure the loop can me exited
+                        System.out.print(Character.MIN_VALUE);
+                        if (!this.inElection) {
+                            break;
+                        }
                     }
                 }
 
@@ -187,12 +209,12 @@ public class Peer {
                     timer2.cancel();
                     task2.cancel();
                 } catch (Exception e) {
-                    System.out.println("Failed canceling timer");
+                    Logger.error("Failed stopping timer");
                 }
 
                 // Se ainda o coordenador não foi definido
                 if (inElection) {
-                    System.out.println("Waiting for new coordinator message");
+                    Logger.debug("Should not be the coordinator");
                     // Entrou aqui se a mensagem de eleição recebeu pelo menos uma resposta
 
                     // Inicia outra eleição caso não receba NEW_COORDINATOR
@@ -201,27 +223,29 @@ public class Peer {
                         @Override
                         public void run() {
                             // convoca outra eleição
+                            Logger.info("No Multicast %s message received. Starting a new election",
+                                    MulticastMessageType.NEW_COORDINATOR);
                             inElection = true;
                             shouldStartNewElection = true;
                             multicastHandler.restart();
                         }
                     };
-                    timer3.schedule(task3, 5000);
+                    timer3.schedule(task3, 10000);
 
+                    Logger.debug("Waiting for Multicast %s message", MulticastMessageType.NEW_COORDINATOR);
                     MulticastMessage message = multicastHandler.waitForMessage();
 
                     try {
                         timer3.cancel();
                         task3.cancel();
                     } catch (Exception e) {
-                        System.out.println("Failed canceling timer");
+                        Logger.error("Failed stopping timer");
                     }
 
                     if (message.type == MulticastMessageType.NEW_COORDINATOR) {
-                        System.out.println(
-                                String.format("The new coordinator (%s) is active", message.senderUnicastPort));
-                        currentCoordinatorPort = message.senderUnicastPort;
-                        inElection = false;
+                        Logger.info("Received Multicast %s message. New Coordinator become live", message.type);
+                        this.currentCoordinatorPort = message.senderUnicastPort;
+                        this.inElection = false;
                     }
                 }
             }

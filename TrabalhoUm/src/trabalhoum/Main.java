@@ -26,16 +26,28 @@ public class Main {
     public static void main(String[] args) {
         try {
             if (args.length != 1) {
-                System.out.println("[Invalid input error] Usage: java -jar TrabalhoUm.jar [processId]");
+                Logger.error("Invalid input. Try: java -jar TrabalhoUm.jar [processId]");
                 System.exit(0);
             }
 
             Integer processId = Integer.parseInt(args[0]);
 
             if (processId < 0 || processId > processesPorts.length - 1) {
-                System.out.println("[Invalid input error] processId is out of bounds");
+                Logger.error("Invalid input. 'processId' is out of bounds. (Min: 0, Max: %s)",
+                        processesPorts.length - 1);
                 System.exit(0);
             }
+
+            if (processId == processesPorts.length - 1) {
+                Logger.debug("Process with higher id. Will be the first coordinator");
+            } else if (processId == 0) {
+                Logger.debug("Process with lower id");
+            }
+
+            Logger.info("ProcessId: %s", processId);
+            Logger.info("Port: %s", processesPorts[processId]);
+            Logger.input("Press 'Enter' to start the peer");
+            new Scanner(System.in).nextLine();
 
             Peer peer = new Peer(
                     multicastAddress,
@@ -44,24 +56,9 @@ public class Main {
                     processesPorts[processId],
                     processesPorts[processesPorts.length - 1]);
 
-            boolean isCoordinator = processId == processesPorts.length - 1;
-
-            if (isCoordinator) {
-                System.out.println("This process is the Coordinator!");
-            }
-
-            System.out.println("ProcessId: " + processId);
-            System.out.println("Port: " + processesPorts[processId]);
-            System.out.println("");
-            System.out.println("Press 'Enter' to start the peer");
-
-            new Scanner(System.in).nextLine();
-
-            System.out.print("\033[H\033[2J");
-
             peer.start();
-        } catch (NumberFormatException e) {
-            System.out.println("[Invalid input error] processId must be a number");
+        } catch (Exception e) {
+            Logger.error("Invalid input. 'processId' must be a number");
             System.exit(0);
         }
 

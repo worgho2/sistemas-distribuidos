@@ -26,7 +26,7 @@ public class MulticastHandler {
             multicastSocket = new MulticastSocket(port);
             multicastSocket.joinGroup(inetAddress);
         } catch (Exception e) {
-            System.out.println("MulticastHandler exception: " + e.getMessage());
+            Logger.error("Failed starting MulticastHandler: %s", e.getMessage());
         }
     }
 
@@ -37,7 +37,7 @@ public class MulticastHandler {
             DatagramPacket datagramPacket = new DatagramPacket(buffer, buffer.length, this.inetAddress, this.port);
             multicastSocket.send(datagramPacket);
         } catch (IOException e) {
-            System.out.println("MulticastHandler.send exception: " + e.getMessage());
+            Logger.error("Failed sending Multicast %s message", e.getMessage());
         }
     }
 
@@ -59,7 +59,7 @@ public class MulticastHandler {
             multicastSocket = new MulticastSocket(port);
             multicastSocket.joinGroup(inetAddress);
         } catch (Exception e) {
-            System.out.println("MulticastHandler.restart exception: " + e.getMessage());
+            Logger.error("Failed restarting MulticastHandler", e.getMessage());
         }
 
     }
@@ -68,13 +68,13 @@ public class MulticastHandler {
         try {
             multicastSocket.leaveGroup(inetAddress);
         } catch (Exception e) {
-            System.out.println("MulticastHandler.close exception: " + e.getMessage());
+            Logger.error("Failed stopping MulticastHandler", e.getMessage());
         }
 
         try {
             multicastSocket.close();
         } catch (Exception e) {
-            System.out.println("MulticastHandler.close exception: " + e.getMessage());
+            Logger.error("Failed stopping MulticastHandler", e.getMessage());
         }
     }
 }

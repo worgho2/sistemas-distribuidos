@@ -19,7 +19,7 @@ public class TCPServer {
         try {
             serverSocket = new ServerSocket(port);
         } catch (IOException e) {
-            System.out.println("TCPServer exception: " + e.getMessage());
+            Logger.error("Failed starting TCPServer: %s", e.getMessage());
         }
     }
 
@@ -39,7 +39,7 @@ public class TCPServer {
         try {
             serverSocket.close();
         } catch (Exception e) {
-            System.out.println("TCPServer.close exception: " + e.getMessage());
+            Logger.error("Failed closing TCPServer: %s", e.getMessage());
         }
     }
 }
