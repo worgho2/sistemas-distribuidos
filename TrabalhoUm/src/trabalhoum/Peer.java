@@ -47,15 +47,15 @@ public class Peer {
     }
 
     private boolean isCoordinator() {
-        return port == currentCoordinatorPort;
+        return port.equals(currentCoordinatorPort);
     }
 
     private boolean hasHigherId() {
-        return port == processesPorts.get(processesPorts.size() - 1);
+        return port.equals(processesPorts.get(processesPorts.size() - 1));
     }
 
     private boolean hasLowerId() {
-        return port == processesPorts.get(0);
+        return port.equals(processesPorts.get(0));
     }
 
     private void startElection() {
