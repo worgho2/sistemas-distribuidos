@@ -4,6 +4,10 @@
  */
 package trabalho.dois.servidor;
 
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
+
 /**
  *
  * @author otavio
@@ -14,7 +18,14 @@ public class TrabalhoDoisServidor {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        // TODO code application logic here
+        try {
+            Registry nameService = LocateRegistry.createRegistry(1099);
+            Server server = new Server();
+            nameService.rebind("trabalho-dois", server);
+        } catch (RemoteException e) {
+            Logger.error("Server remote exception %s", e.getMessage());
+            System.exit(0);
+        }
     }
     
 }
