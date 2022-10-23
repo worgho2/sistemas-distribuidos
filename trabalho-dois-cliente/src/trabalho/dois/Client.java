@@ -29,7 +29,7 @@ public class Client extends UnicastRemoteObject implements ClientInterface {
     
     public void initialize() throws RemoteException {
        this.serverPublicKey = this.server.registerUser(this.name, this);
-       Logger.info("Client registered on server with name: %s", this.name);
+       Logger.info("Registering on server", this.name);
        
        // TODO: start interface handler
     }

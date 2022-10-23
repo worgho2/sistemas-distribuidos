@@ -31,6 +31,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
     @Override
     public PublicKey registerUser(String clientName, ClientInterface clientInterface) throws RemoteException {
         calendar.registerClient(clientName, clientInterface);
+        Logger.info("Client registered: (%s)", clientName);
         return security.getPublicKey();
     }
 
