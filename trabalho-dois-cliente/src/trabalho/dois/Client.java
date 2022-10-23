@@ -4,9 +4,6 @@
  */
 package trabalho.dois;
 
-import java.awt.AWTException;
-import java.awt.Robot;
-import java.awt.event.KeyEvent;
 import trabalho.dois.shared.*;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
@@ -32,10 +29,6 @@ public class Client extends UnicastRemoteObject implements ClientInterface {
         this.security = new Security(name);
     }
     
-    public void printInstructions() {
-        Logger.input("Select an option:\n1 -> Create Appointment\n2 -> Cancel Appointment or reminder\n3 -> List Appointments");
-    }
-    
     public void initialize() throws RemoteException {
         this.serverPublicKey = this.server.registerUser(this.name, this);
         Logger.info("Registed on server", this.name);
@@ -44,7 +37,7 @@ public class Client extends UnicastRemoteObject implements ClientInterface {
         while(true) {
             if (!canScanMenu) { System.out.print(Character.MIN_VALUE); continue; }
 
-            this.printInstructions();
+            Logger.input("Select an option:\n1 -> Create appointment\n2 -> Cancel appointment or reminder\n3 -> List appointments");
             String menu = scanner.nextLine();
             if (!canScanMenu) { System.out.print(Character.MIN_VALUE); continue; }
 
@@ -54,23 +47,24 @@ public class Client extends UnicastRemoteObject implements ClientInterface {
                 Reminder reminder = Reminder.DISABLED;
                 HashMap<String, Reminder> attendees = new HashMap<>();
                 
-                Logger.input("Enter the appointment name:");
+                Logger.input("Name:");
                 String appointmentNameOption = scanner.nextLine();
                 if (!canScanMenu) { System.out.print(Character.MIN_VALUE); continue; }
                 appointmentName = appointmentNameOption;
                 
-                Logger.input("Enter the appointment date (day/month/year hour:minute):");
+                Logger.input("Date (day/month/year hour:minute):");
                 String appointmentDateTime = scanner.nextLine();
                 if (!canScanMenu) { System.out.print(Character.MIN_VALUE); continue; }
                 String[] dateTimeComponents = appointmentDateTime.split(" ");
-                if (dateTimeComponents.length != 2) { System.out.print(Character.MIN_VALUE); continue; }
+                if (dateTimeComponents.length != 2) { Logger.error("Invalid input"); continue; }
                 String[] dateComponents = dateTimeComponents[0].split("/");
-                if (dateComponents.length != 3) { System.out.print(Character.MIN_VALUE); continue; }
+                if (dateComponents.length != 3) { Logger.error("Invalid input"); continue; }
                 String[] timeComponents = dateTimeComponents[1].split(":");
-                if (timeComponents.length != 2) { System.out.print(Character.MIN_VALUE); continue; }
+                if (timeComponents.length != 2) { Logger.error("Invalid input"); continue; }
                 dateTime = LocalDateTime.of(Integer.parseInt(dateComponents[2]), Integer.parseInt(dateComponents[1]), Integer.parseInt(dateComponents[0]), Integer.parseInt(timeComponents[0]), Integer.parseInt(timeComponents[1]));
-
-                Logger.input("Select a reminder option:\n1 -> Disabled\n2 -> Five minutes before\n3 -> Ten minutes before\n4 -> On time");
+                if (dateTime.isBefore(LocalDateTime.now())) { Logger.error("Invalid input"); continue; }
+                
+                Logger.input("Reminder:\n1 -> Disabled\n2 -> Five minutes before\n3 -> Ten minutes before\n4 -> On time");
                 String reminderOption = scanner.nextLine();
                 if (!canScanMenu) { System.out.print(Character.MIN_VALUE); continue; }
                 else if (reminderOption.equals("1")) { reminder = Reminder.DISABLED; }
@@ -78,11 +72,15 @@ public class Client extends UnicastRemoteObject implements ClientInterface {
                 else if (reminderOption.equals("3")) { reminder = Reminder.FIVE_MINUTES_BEFORE; }
                 else if (reminderOption.equals("4")) { reminder = Reminder.ON_TIME; }
                 
-                Logger.input("Enter attendees (attendee1 attendee2 ...):");
+                Logger.input("Attendees (name1 name2 ...):");
                 String attendeesOption = scanner.nextLine();
                 if (!canScanMenu) { System.out.print(Character.MIN_VALUE); continue; }
                 String[] attendeesArray = attendeesOption.split(" ");
-                for (String attendeeName : attendeesArray) { attendees.put(attendeeName, Reminder.DISABLED); }
+                for (String attendeeName : attendeesArray) {
+                    if (!attendeeName.equals(this.name)) {
+                        attendees.put(attendeeName, Reminder.DISABLED);
+                    }
+                }
                 
                 Appointment newAppointment = new Appointment(appointmentName, dateTime, this.name, reminder, attendees);
                 server.createAppointment(this.name, newAppointment);
@@ -90,29 +88,33 @@ public class Client extends UnicastRemoteObject implements ClientInterface {
             }
 
             if (menu.equals("2")) {
-                Logger.input("Enter the appointment and the reminder option (appointmentName onlyReminder), E.g: event1 true :");
-                String acceptMenu = scanner.nextLine();
+                Logger.input("Appointment name:");
+                String appointmentName = scanner.nextLine();
                 if (!canScanMenu) { System.out.print(Character.MIN_VALUE); continue; }
-                String[] elements = acceptMenu.split(" ");
-                if (elements.length != 2) { System.out.print(Character.MIN_VALUE); continue; }
-                String appointmentName = elements[0];
-                Boolean onlyReminder = elements[1].equals("true");
-                server.cancelAppointmentOrReminder(this.name, appointmentName, onlyReminder);
+                
+                Logger.input("Disable only reminder? (y or n):");
+                String onlyReminder = scanner.nextLine();
+                if (!canScanMenu) { System.out.print(Character.MIN_VALUE); continue; }
+                
+                server.cancelAppointmentOrReminder(this.name, appointmentName, onlyReminder.equals("y"));
                 continue;
             }
 
             if (menu.equals("3")) {
-                Logger.input("Enter a date (day/month/year), E.g: 16/05/1998 :");
+                Logger.input("Date (day/month/year):");
                 String acceptMenu = scanner.nextLine();
                 if (!canScanMenu) { System.out.print(Character.MIN_VALUE); continue; }
                 String[] elements = acceptMenu.split("/");
-                if (elements.length != 3) { System.out.print(Character.MIN_VALUE); continue; }
+                if (elements.length != 3) { Logger.error("Invalid input"); continue; }
                 int day = Integer.parseInt(elements[0]);
                 int month = Integer.parseInt(elements[1]);
                 int year = Integer.parseInt(elements[2]);
                 List<Appointment> appointmentsList = server.listAppointments(this.name, LocalDate.of(year, month, day));
-                Logger.info("Appointments on (%s): %s", acceptMenu, appointmentsList);
+                Logger.info("Appointments at (%s): %s", acceptMenu, appointmentsList);
+                continue;
             }
+            
+            Logger.error("Invalid input");
         }
     }
     
@@ -127,36 +129,21 @@ public class Client extends UnicastRemoteObject implements ClientInterface {
             return null;
         }
         
-        /**
-         * Dismiss the main menu and enable the invite menu
-         */
-        try {
-            this.canScanMenu = false;
-            
-            Robot robot = new Robot();
-            robot.keyPress(KeyEvent.VK_ENTER);
-            robot.keyRelease(KeyEvent.VK_ENTER);
-        } catch (AWTException e) {
-            Logger.error("Robot exception: %s", e.getMessage());
-        }
+        this.canScanMenu = false;
         
         Scanner scanner = new Scanner(System.in);
         while(true) {
-            Logger.info("Received appointment invite: (name: %s, owner: %s, date: %s)", invite.name, invite.owner, invite.date);
-            Logger.input("Select an option:\n1 -> Accept\n2 -> Reject");
+            Logger.input("Received appointment invite (name: %s, owner: %s, date: %s):\n1 -> Accept\n2 -> Reject", invite.name, invite.owner, invite.date);
             String inputMenu = scanner.nextLine();
 
             if (inputMenu.equals("1")) {
-                Logger.input("Select a reminder option:\n1 -> Disabled\n2 -> Five minutes before\n3 -> Ten minutes before\n4 -> On time");
+                Logger.input("Reminder:\n1 -> Disabled\n2 -> Five minutes before\n3 -> Ten minutes before\n4 -> On time");
                 String acceptMenu = scanner.nextLine();
-                System.out.println("deu aqui");
                 
                 if (acceptMenu.equals("1")) {
-                    System.out.println("deu aqui 2");
                     this.canScanMenu = true;
                     return invite.createResponse(true, Appointment.Reminder.DISABLED);
                 }
-                System.out.println("deu aqui 3");
                 
                 if (acceptMenu.equals("2")) {
                     this.canScanMenu = true;
