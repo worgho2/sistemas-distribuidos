@@ -4,8 +4,8 @@
  */
 package trabalho.dois.servidor.shared;
 
-import java.util.Date;
 import java.util.HashMap;
+import java.time.LocalDate;
 
 /**
  *
@@ -13,17 +13,17 @@ import java.util.HashMap;
  */
 public class Appointment {
     public String name;
-    public Date date;
+    public LocalDate date;
     public String owner;
     public Reminder reminder;
     public HashMap<String, Reminder> attendees;
 
     public class Invite {
         public String name;
-        public Date date;
+        public LocalDate date;
         public String owner;
 
-        public Invite(String name, Date date, String owner) {
+        public Invite(String name, LocalDate date, String owner) {
             this.name = name;
             this.date = date;
             this.owner = owner;
@@ -53,7 +53,7 @@ public class Appointment {
         ON_TIME;
     }
 
-    public Appointment(String name, Date date, String owner, Reminder reminder, HashMap<String, Reminder> attendees) {
+    public Appointment(String name, LocalDate date, String owner, Reminder reminder, HashMap<String, Reminder> attendees) {
         this.name = name;
         this.date = date;
         this.owner = owner;

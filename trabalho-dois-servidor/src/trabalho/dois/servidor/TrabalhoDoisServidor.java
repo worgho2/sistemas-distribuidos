@@ -23,7 +23,7 @@ public class TrabalhoDoisServidor {
             Server server = new Server();
             nameService.rebind("trabalho-dois", server);
         } catch (RemoteException e) {
-            Logger.error("Server remote exception %s", e.getMessage());
+            Logger.error("Main exception: %s", e.getMessage());
             System.exit(0);
         }
     }

@@ -7,7 +7,8 @@ package trabalho.dois.servidor;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.security.PublicKey;
-import java.util.Date;
+import java.time.LocalDate;
+import java.util.*;
 import trabalho.dois.servidor.shared.*;
 
 /**
@@ -15,25 +16,38 @@ import trabalho.dois.servidor.shared.*;
  * @author otavio
  */
 public class Server extends UnicastRemoteObject implements ServerInterface {
-
-    @Override    
+    private final Security security;
+    private final CalendarManager calendar;
+    
+    public Server() throws RemoteException {
+        super();
+        
+        this.security = new Security();
+        this.calendar = new CalendarManager(this.security);
+    }
+    
+    @Override
     public PublicKey registerUser(String clientName, ClientInterface clientInterface) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        calendar.registerClient(clientName, clientInterface);
+        return security.getPublicKey();
     }
 
     @Override
     public void createAppointment(String clientName, Appointment appointment) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        this.calendar.createAppointment(clientName, appointment);
     }
 
     @Override
-    public void cancelAppointmentOrAlert(String clientName, String appointmentName, Boolean onlyAlert) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void cancelAppointmentOrReminder(String clientName, String appointmentName, Boolean onlyReminder) throws RemoteException {
+        if (onlyReminder) {
+           this.calendar.disableAppointmentReminder(clientName, appointmentName);
+        } else {
+            this.calendar.cancelAppointment(clientName, appointmentName); 
+        }
     }
 
     @Override
-    public Appointment[] listAppointments(String clientName, Date date) throws RemoteException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public List<Appointment> listAppointments(String clientName, LocalDate date) throws RemoteException {
+        return this.calendar.listClientAppointments(clientName, date);
     }
-  
 }
