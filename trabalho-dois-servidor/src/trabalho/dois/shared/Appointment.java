@@ -4,6 +4,7 @@
  */
 package trabalho.dois.shared;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.time.LocalDateTime;
 
@@ -11,14 +12,14 @@ import java.time.LocalDateTime;
  *
  * @author otavio
  */
-public class Appointment {
+public class Appointment implements Serializable {
     public String name;
     public LocalDateTime date;
     public String owner;
     public Reminder reminder;
     public HashMap<String, Reminder> attendees;
 
-    public class Invite {
+    public class Invite implements Serializable {
         public String name;
         public LocalDateTime date;
         public String owner;
@@ -34,7 +35,7 @@ public class Appointment {
         }
     }
 
-    public class InviteResponse {
+    public class InviteResponse implements Serializable {
         public Boolean accepted;
         public Reminder reminder;
 
@@ -44,7 +45,7 @@ public class Appointment {
         }
     }
 
-    public enum Reminder {
+    public enum Reminder implements Serializable {
         PENDING,
         DISABLED,
         FIVE_MINUTES_BEFORE,

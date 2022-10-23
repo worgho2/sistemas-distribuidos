@@ -4,12 +4,12 @@
  */
 package trabalho.dois;
 
-import trabalho.dois.shared.Appointment;
-import trabalho.dois.shared.ClientInterface;
-import trabalho.dois.shared.ServerInterface;
+import trabalho.dois.shared.*;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.security.*;
+import java.time.*;
+import java.util.*;
 
 /**
  *
@@ -30,8 +30,6 @@ public class Client extends UnicastRemoteObject implements ClientInterface {
     public void initialize() throws RemoteException {
        this.serverPublicKey = this.server.registerUser(this.name, this);
        Logger.info("Registering on server", this.name);
-       
-       // TODO: start interface handler
     }
 
     @Override
