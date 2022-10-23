@@ -10,18 +10,14 @@ import java.security.*;
  *
  * @author otavio
  */
-public class Security {
-    private final String clientName;
+public class Security { 
+    public Security() {}
     
-    public Security(String clientName) {
-        this.clientName = clientName;
-    }
-    
-    public Boolean isValidSignature(PublicKey publicKey, byte[] signature) {
+    public Boolean isValidSignature(PublicKey publicKey, byte[] signature, String message) {
         try {
             Signature signatureInstance = Signature.getInstance("DSA");
             signatureInstance.initVerify(publicKey);
-            signatureInstance.update(this.clientName.getBytes());
+            signatureInstance.update(message.getBytes());
             
             if (signatureInstance.verify(signature)) {
                 Logger.info("Security signature is valid");

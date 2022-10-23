@@ -26,7 +26,7 @@ public class Client extends UnicastRemoteObject implements ClientInterface {
     public Client(String name, ServerInterface server) throws RemoteException {
         this.name = name;
         this.server = server;
-        this.security = new Security(name);
+        this.security = new Security();
     }
     
     public void initialize() throws RemoteException {
@@ -131,7 +131,7 @@ public class Client extends UnicastRemoteObject implements ClientInterface {
 
     @Override
     public Appointment.InviteResponse onAppointmentInvite(Appointment.Invite invite, byte[] signature) throws RemoteException {
-        if (!this.security.isValidSignature(this.serverPublicKey, signature)) {
+        if (!this.security.isValidSignature(this.serverPublicKey, signature, invite.toSignature(this.name))) {
             return null;
         }
         

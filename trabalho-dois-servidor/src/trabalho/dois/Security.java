@@ -27,16 +27,16 @@ public class Security {
         }
     }
     
-    public byte[] generateSignature(String clientName) {
+    public byte[] generateSignature(String message) {
         try {
             Signature signature = Signature.getInstance("DSA");
             signature.initSign(this.privateKey);
-            signature.update(clientName.getBytes());
+            signature.update(message.getBytes());
             
             return signature.sign();
         } catch (InvalidKeyException | NoSuchAlgorithmException | SignatureException e) {
             Logger.error("Security.generateSignature exception: %s", e.getMessage());
-            return clientName.getBytes();
+            return message.getBytes();
         }
     }
     

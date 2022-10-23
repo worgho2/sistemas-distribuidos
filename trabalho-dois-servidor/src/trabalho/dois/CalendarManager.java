@@ -50,8 +50,8 @@ public class CalendarManager {
                     try {
                         if (clientNamesClientInterfaces.containsKey(attendeeName)) {
                             ClientInterface cli = clientNamesClientInterfaces.get(attendeeName);
-                            byte[] signature = security.generateSignature(attendeeName);
                             Invite invite = appointment.getInvite(attendeeName);
+                            byte[] signature = security.generateSignature(invite.toSignature(attendeeName));
                             Logger.info("Sending appointment (%s) invite to attendee (%s)", appointment.name, attendeeName);
                             InviteResponse response = cli.onAppointmentInvite(invite, signature);
 

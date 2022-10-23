@@ -35,6 +35,10 @@ public class Appointment implements Serializable {
             return new InviteResponse(accepted, reminder);
         }
         
+        public String toSignature(String clientName) {
+            return String.format("%s-%s-%s|%s", this.name, this.date, this.owner, clientName);
+        }
+        
         public String print() {
             return String.format("name: %s | owner: %s | date: %s", this.name, this.owner, this.date.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
         }
