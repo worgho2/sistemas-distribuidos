@@ -28,6 +28,10 @@ public class Appointment {
             this.date = date;
             this.owner = owner;
         }
+        
+        public InviteResponse createResponse(Boolean accepted, Reminder reminder) {
+            return new InviteResponse(accepted, reminder);
+        }
     }
 
     public class InviteResponse {
@@ -37,11 +41,6 @@ public class Appointment {
         public InviteResponse(Boolean accepted, Reminder reminder) {
             this.accepted = accepted;
             this.reminder = reminder;
-        }
-
-        public InviteResponse(Boolean accepted) {
-            this.accepted = accepted;
-            this.reminder = Reminder.DISABLED;
         }
     }
 
