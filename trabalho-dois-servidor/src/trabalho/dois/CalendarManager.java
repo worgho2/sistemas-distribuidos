@@ -2,14 +2,15 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package trabalho.dois.servidor;
+package trabalho.dois;
 
+import trabalho.dois.shared.Appointment;
+import trabalho.dois.shared.ClientInterface;
 import java.rmi.RemoteException;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
-import trabalho.dois.servidor.shared.*;
-import trabalho.dois.servidor.shared.Appointment.*;
+import trabalho.dois.shared.Appointment.*;
 
 /**
  *

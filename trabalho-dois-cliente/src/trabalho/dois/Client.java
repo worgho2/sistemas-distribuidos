@@ -2,12 +2,14 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package trabalho.dois.cliente;
+package trabalho.dois;
 
+import trabalho.dois.shared.Appointment;
+import trabalho.dois.shared.ClientInterface;
+import trabalho.dois.shared.ServerInterface;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.security.*;
-import trabalho.dois.cliente.shared.*;
 
 /**
  *
@@ -19,7 +21,7 @@ public class Client extends UnicastRemoteObject implements ClientInterface {
     private final Security security;
     private PublicKey serverPublicKey = null;
     
-    public Client(String name, ServerInterface server) {
+    public Client(String name, ServerInterface server) throws RemoteException {
         this.name = name;
         this.server = server;
         this.security = new Security(name);

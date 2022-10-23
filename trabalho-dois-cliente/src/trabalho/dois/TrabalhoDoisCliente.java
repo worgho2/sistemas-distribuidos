@@ -2,12 +2,12 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
  */
-package trabalho.dois.cliente;
+package trabalho.dois;
 
 import java.rmi.*;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import trabalho.dois.cliente.shared.ServerInterface;
+import trabalho.dois.shared.ServerInterface;
 
 /**
  *
