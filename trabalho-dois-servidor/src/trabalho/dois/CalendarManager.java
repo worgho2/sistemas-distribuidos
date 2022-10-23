@@ -31,10 +31,12 @@ public class CalendarManager {
     
     public void registerClient(String clientName, ClientInterface reference) {
         this.clientNamesClientInterfaces.put(clientName, reference);
+        Logger.info("Client (%s) registered", clientName);
     }
     
     public void createAppointment(String clientName, Appointment appointment) {
         this.appointments.push(appointment);
+        Logger.info("Client (%s) created appointment (%s)", clientName, appointment.name);
         
         if (appointment.reminder != Appointment.Reminder.DISABLED && clientNamesClientInterfaces.containsKey(clientName)) {
             this.reminderScheduler.schedule(appointment.reminder, clientName, clientNamesClientInterfaces.get(clientName), appointment);
@@ -50,15 +52,19 @@ public class CalendarManager {
                             ClientInterface cli = clientNamesClientInterfaces.get(attendeeName);
                             byte[] signature = security.generateSignature(attendeeName);
                             Invite invite = appointment.getInvite(attendeeName);
+                            Logger.info("Sending appointment (%s) invite to attendee (%s)", appointment.name, attendeeName);
                             InviteResponse response = cli.onAppointmentInvite(invite, signature);
 
                             for (Appointment app : appointments) {
                                 if (app.name.equals(appointment.name)) {
                                     if (response.accepted) {
                                         app.attendees.put(attendeeName, response.reminder);
+                                        Logger.info("Attendee (%s) accepted appointment (%s)", attendeeName, appointment.name);
+                                        
                                         reminderScheduler.schedule(response.reminder, attendeeName, cli, app);
                                     } else {
                                         app.attendees.remove(attendeeName);
+                                        Logger.info("Attendee (%s) rejected appointment (%s)", attendeeName, appointment.name);
                                     }
                                 }
                             }
@@ -81,6 +87,7 @@ public class CalendarManager {
             if (currentApp.name.equals(appointmentName)) {
                 if (currentApp.owner.equals(clientName)) {
                     Appointment removedAppointment = this.appointments.remove(it.nextIndex());
+                    Logger.info("Client (%s) canceled appointment (%s)", clientName, appointmentName);
                     this.reminderScheduler.cancel(clientName, currentApp);
                     
                     for (String attendeeName : currentApp.attendees.keySet()) {
@@ -93,6 +100,7 @@ public class CalendarManager {
                                 try {
                                     if (clientNamesClientInterfaces.containsKey(attendeeName)) {
                                         ClientInterface cli = clientNamesClientInterfaces.get(attendeeName);
+                                        Logger.info("Sending appointment (%s) canceled notification to attendee (%s)", appointmentName, attendeeName);
                                         cli.onAppointmentNotification("Appointment cancelled", currentApp);
                                     }
                                 } catch (RemoteException e) {
@@ -106,6 +114,7 @@ public class CalendarManager {
                     return;
                 } else if (currentApp.attendees.containsKey(clientName)) {
                     currentApp.attendees.remove(clientName);
+                    Logger.info("Attendee (%s) exited appointment (%s)", clientName, appointmentName);
                     this.reminderScheduler.cancel(clientName, currentApp);
                     return;
                 }
@@ -122,10 +131,12 @@ public class CalendarManager {
             if (currentApp.name.equals(appointmentName)) {
                 if (currentApp.owner.equals(clientName)) {
                     currentApp.reminder = Appointment.Reminder.DISABLED;
+                    Logger.info("Client (%s) disabled appointment (%s) reminder", clientName, appointmentName);
                     this.reminderScheduler.cancel(clientName, currentApp);
                     return;
                 } else if (currentApp.attendees.containsKey(clientName)) {
                     currentApp.attendees.put(clientName, Appointment.Reminder.DISABLED);
+                    Logger.info("Attendee (%s) disabled appointment (%s) reminder", clientName, appointmentName);
                     this.reminderScheduler.cancel(clientName, currentApp);
                     return;
                 }

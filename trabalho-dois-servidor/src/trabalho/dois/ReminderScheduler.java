@@ -51,6 +51,7 @@ public class ReminderScheduler {
             public void run() {
                 try {
                     String message = getReminderMessage(reminder);
+                    Logger.info("Sending appointment (%s) notification (%s) to client (%s)", appointment.name, reminder, clientName);
                     clientInterface.onAppointmentNotification(message, appointment);
                 } catch (RemoteException e) {
                     Logger.error("ReminderScheduler.schedule exception", e.getMessage());
@@ -60,18 +61,21 @@ public class ReminderScheduler {
         
         switch (reminder) {
             case TEN_MINUTES_BEFORE:
-                Date date1 = Date.from(appointment.date.minusSeconds(10).atZone(ZoneId.systemDefault()).toInstant());
+                Date date1 = Date.from(appointment.date.minusMinutes(10).atZone(ZoneId.systemDefault()).toInstant());
                 timer.schedule(timerTask, date1);
+                Logger.info("Scheduled appointment (%s) notification (%s) to client (%s) at (%s)", appointment.name, reminder, clientName, date1);
                 break;
 
             case FIVE_MINUTES_BEFORE:
-                Date date2 = Date.from(appointment.date.minusSeconds(5).atZone(ZoneId.systemDefault()).toInstant());
+                Date date2 = Date.from(appointment.date.minusMinutes(5).atZone(ZoneId.systemDefault()).toInstant());
                 timer.schedule(timerTask, date2);
+                Logger.info("Scheduled appointment (%s) notification (%s) to client (%s) at (%s)", appointment.name, reminder, clientName, date2);
                 break;
 
             case ON_TIME:
                 Date date3 = Date.from(appointment.date.atZone(ZoneId.systemDefault()).toInstant());
                 timer.schedule(timerTask, date3);
+                Logger.info("Scheduled appointment (%s) notification (%s) to client (%s) at (%s)", appointment.name, reminder, clientName, date3);
                 break;
         }
         
@@ -86,6 +90,7 @@ public class ReminderScheduler {
         if (this.reminderTimers.containsKey(reminderKey)) {
             this.reminderTimers.get(reminderKey).cancel();
             this.reminderTimers.remove(reminderKey);
+            Logger.info("Canceled appointment (%s) scheduled notification to client (%s)", appointment.name, clientName);
         }
     }
 }

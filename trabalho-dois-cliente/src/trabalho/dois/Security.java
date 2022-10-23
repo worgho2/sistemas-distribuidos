@@ -24,7 +24,7 @@ public class Security {
             signatureInstance.update(this.clientName.getBytes());
             
             if (signatureInstance.verify(signature)) {
-                Logger.info("Security.isValidSignature received a valid signature");
+                Logger.info("Security signature is valid");
                 return true;
             } else {
                 return false;

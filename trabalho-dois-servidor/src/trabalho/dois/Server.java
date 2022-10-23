@@ -26,12 +26,13 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
         
         this.security = new Security();
         this.calendar = new CalendarManager(this.security);
+        
+        Logger.info("Server initialized");
     }
     
     @Override
     public PublicKey registerUser(String clientName, ClientInterface clientInterface) throws RemoteException {
         calendar.registerClient(clientName, clientInterface);
-        Logger.info("Client registered: (%s)", clientName);
         return security.getPublicKey();
     }
 
@@ -43,9 +44,9 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
     @Override
     public void cancelAppointmentOrReminder(String clientName, String appointmentName, Boolean onlyReminder) throws RemoteException {
         if (onlyReminder) {
-           this.calendar.disableAppointmentReminder(clientName, appointmentName);
+            this.calendar.disableAppointmentReminder(clientName, appointmentName);
         } else {
-            this.calendar.cancelAppointment(clientName, appointmentName); 
+            this.calendar.cancelAppointment(clientName, appointmentName);
         }
     }
 
