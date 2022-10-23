@@ -42,11 +42,11 @@ public class Client extends UnicastRemoteObject implements ClientInterface {
 
         Scanner scanner = new Scanner(System.in);
         while(true) {
-            if (!canScanMenu) { continue; }
+            if (!canScanMenu) { System.out.print(Character.MIN_VALUE); continue; }
 
             this.printInstructions();
             String menu = scanner.nextLine();
-            if (!canScanMenu) { continue; }
+            if (!canScanMenu) { System.out.print(Character.MIN_VALUE); continue; }
 
             if (menu.equals("1")) {
                 String appointmentName = "";
@@ -56,23 +56,23 @@ public class Client extends UnicastRemoteObject implements ClientInterface {
                 
                 Logger.input("Enter the appointment name:");
                 String appointmentNameOption = scanner.nextLine();
-                if (!canScanMenu) { continue; }
+                if (!canScanMenu) { System.out.print(Character.MIN_VALUE); continue; }
                 appointmentName = appointmentNameOption;
                 
                 Logger.input("Enter the appointment date (day/month/year hour:minute):");
                 String appointmentDateTime = scanner.nextLine();
-                if (!canScanMenu) { continue; }
+                if (!canScanMenu) { System.out.print(Character.MIN_VALUE); continue; }
                 String[] dateTimeComponents = appointmentDateTime.split(" ");
-                if (dateTimeComponents.length != 2) { continue; }
+                if (dateTimeComponents.length != 2) { System.out.print(Character.MIN_VALUE); continue; }
                 String[] dateComponents = dateTimeComponents[0].split("/");
-                if (dateComponents.length != 3) { continue; }
+                if (dateComponents.length != 3) { System.out.print(Character.MIN_VALUE); continue; }
                 String[] timeComponents = dateTimeComponents[1].split(":");
-                if (timeComponents.length != 2) { continue; }
+                if (timeComponents.length != 2) { System.out.print(Character.MIN_VALUE); continue; }
                 dateTime = LocalDateTime.of(Integer.parseInt(dateComponents[2]), Integer.parseInt(dateComponents[1]), Integer.parseInt(dateComponents[0]), Integer.parseInt(timeComponents[0]), Integer.parseInt(timeComponents[1]));
 
                 Logger.input("Select a reminder option:\n1 -> Disabled\n2 -> Five minutes before\n3 -> Ten minutes before\n4 -> On time");
                 String reminderOption = scanner.nextLine();
-                if (!canScanMenu) { continue; }
+                if (!canScanMenu) { System.out.print(Character.MIN_VALUE); continue; }
                 else if (reminderOption.equals("1")) { reminder = Reminder.DISABLED; }
                 else if (reminderOption.equals("2")) { reminder = Reminder.FIVE_MINUTES_BEFORE; }
                 else if (reminderOption.equals("3")) { reminder = Reminder.FIVE_MINUTES_BEFORE; }
@@ -80,7 +80,7 @@ public class Client extends UnicastRemoteObject implements ClientInterface {
                 
                 Logger.input("Enter attendees (attendee1 attendee2 ...):");
                 String attendeesOption = scanner.nextLine();
-                if (!canScanMenu) { continue; }
+                if (!canScanMenu) { System.out.print(Character.MIN_VALUE); continue; }
                 String[] attendeesArray = attendeesOption.split(" ");
                 for (String attendeeName : attendeesArray) { attendees.put(attendeeName, Reminder.DISABLED); }
                 
@@ -92,9 +92,9 @@ public class Client extends UnicastRemoteObject implements ClientInterface {
             if (menu.equals("2")) {
                 Logger.input("Enter the appointment and the reminder option (appointmentName onlyReminder), E.g: event1 true :");
                 String acceptMenu = scanner.nextLine();
-                if (!canScanMenu) { continue; }
+                if (!canScanMenu) { System.out.print(Character.MIN_VALUE); continue; }
                 String[] elements = acceptMenu.split(" ");
-                if (elements.length != 2) { continue; }
+                if (elements.length != 2) { System.out.print(Character.MIN_VALUE); continue; }
                 String appointmentName = elements[0];
                 Boolean onlyReminder = elements[1].equals("true");
                 server.cancelAppointmentOrReminder(this.name, appointmentName, onlyReminder);
@@ -104,9 +104,9 @@ public class Client extends UnicastRemoteObject implements ClientInterface {
             if (menu.equals("3")) {
                 Logger.input("Enter a date (day/month/year), E.g: 16/05/1998 :");
                 String acceptMenu = scanner.nextLine();
-                if (!canScanMenu) { continue; }
+                if (!canScanMenu) { System.out.print(Character.MIN_VALUE); continue; }
                 String[] elements = acceptMenu.split("/");
-                if (elements.length != 3) { continue; }
+                if (elements.length != 3) { System.out.print(Character.MIN_VALUE); continue; }
                 int day = Integer.parseInt(elements[0]);
                 int month = Integer.parseInt(elements[1]);
                 int year = Integer.parseInt(elements[2]);
