@@ -7,6 +7,7 @@ package trabalho.dois.shared;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 /**
  *
@@ -33,6 +34,10 @@ public class Appointment implements Serializable {
         public InviteResponse createResponse(Boolean accepted, Reminder reminder) {
             return new InviteResponse(accepted, reminder);
         }
+        
+        public String print() {
+            return String.format("name: %s | owner: %s | date: %s", this.name, this.owner, this.date.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+        }
     }
 
     public class InviteResponse implements Serializable {
@@ -42,6 +47,10 @@ public class Appointment implements Serializable {
         public InviteResponse(Boolean accepted, Reminder reminder) {
             this.accepted = accepted;
             this.reminder = reminder;
+        }
+        
+        public String print() {
+            return String.format("accepted: %s | reminder: %s", this.accepted, this.reminder);
         }
     }
 
@@ -63,5 +72,9 @@ public class Appointment implements Serializable {
     
     public Invite getInvite(String atendeeName) {
         return new Invite(atendeeName, this.date, this.owner);
+    }
+    
+    public String print() {
+        return String.format("name: %s | owner: %s | date: %s | reminder: %s | attendees: %s", this.name, this.owner, this.date.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME), this.reminder, this.attendees.keySet());
     }
 }

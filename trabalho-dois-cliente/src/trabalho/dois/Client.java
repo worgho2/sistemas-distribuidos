@@ -102,15 +102,21 @@ public class Client extends UnicastRemoteObject implements ClientInterface {
 
             if (menu.equals("3")) {
                 Logger.input("Date (day/month/year):");
-                String acceptMenu = scanner.nextLine();
+                String dateAsString = scanner.nextLine();
                 if (!canScanMenu) { System.out.print(Character.MIN_VALUE); continue; }
-                String[] elements = acceptMenu.split("/");
+                String[] elements = dateAsString.split("/");
                 if (elements.length != 3) { Logger.error("Invalid input"); continue; }
                 int day = Integer.parseInt(elements[0]);
                 int month = Integer.parseInt(elements[1]);
                 int year = Integer.parseInt(elements[2]);
                 List<Appointment> appointmentsList = server.listAppointments(this.name, LocalDate.of(year, month, day));
-                Logger.info("Appointments at (%s): %s", acceptMenu, appointmentsList);
+                Logger.info("Appointments at (%s):", dateAsString);
+                if (appointmentsList.isEmpty()) {
+                    Logger.info("No appointment found");
+                }
+                for (Appointment appointment: appointmentsList) {
+                    Logger.info("Appointment: (%s)", appointment.print());
+                }
                 continue;
             }
             
@@ -120,7 +126,7 @@ public class Client extends UnicastRemoteObject implements ClientInterface {
     
     @Override
     public void onAppointmentNotification(String message, Appointment appointment) throws RemoteException {
-        Logger.info("Server Notification: %s, Appointment:(name=%s, owner=%s, date=%s, attendees=%s)", message, appointment.name, appointment.owner, appointment.date, appointment.attendees.keySet());
+        Logger.info("Server sent message (%s) of appointment (%s)", message, appointment.print());
     }
 
     @Override
@@ -133,7 +139,7 @@ public class Client extends UnicastRemoteObject implements ClientInterface {
         
         Scanner scanner = new Scanner(System.in);
         while(true) {
-            Logger.input("Received appointment invite (name: %s, owner: %s, date: %s):\n1 -> Accept\n2 -> Reject", invite.name, invite.owner, invite.date);
+            Logger.input("Received appointment invite (%s):\n1 -> Accept\n2 -> Reject", invite.print());
             String inputMenu = scanner.nextLine();
 
             if (inputMenu.equals("1")) {

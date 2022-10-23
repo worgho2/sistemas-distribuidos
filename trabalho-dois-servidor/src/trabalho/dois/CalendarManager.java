@@ -36,7 +36,7 @@ public class CalendarManager {
     
     public void createAppointment(String clientName, Appointment appointment) {
         this.appointments.push(appointment);
-        Logger.info("Client (%s) created appointment (%s)", clientName, appointment.name);
+        Logger.info("Client (%s) created appointment (%s)", clientName, appointment.print());
         
         if (appointment.reminder != Appointment.Reminder.DISABLED && clientNamesClientInterfaces.containsKey(clientName)) {
             this.reminderScheduler.schedule(appointment.reminder, clientName, clientNamesClientInterfaces.get(clientName), appointment);
@@ -86,7 +86,8 @@ public class CalendarManager {
             
             if (currentApp.name.equals(appointmentName)) {
                 if (currentApp.owner.equals(clientName)) {
-                    Appointment removedAppointment = this.appointments.remove(it.nextIndex());
+                    int index = this.appointments.indexOf(currentApp);
+                    Appointment removedAppointment = this.appointments.remove(index);
                     Logger.info("Client (%s) canceled appointment (%s)", clientName, appointmentName);
                     this.reminderScheduler.cancel(clientName, currentApp);
                     
