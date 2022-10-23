@@ -5,7 +5,7 @@
 package trabalho.dois.cliente.shared;
 
 import java.util.HashMap;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  *
@@ -13,17 +13,17 @@ import java.time.LocalDate;
  */
 public class Appointment {
     public String name;
-    public LocalDate date;
+    public LocalDateTime date;
     public String owner;
     public Reminder reminder;
     public HashMap<String, Reminder> attendees;
 
     public class Invite {
         public String name;
-        public LocalDate date;
+        public LocalDateTime date;
         public String owner;
 
-        public Invite(String name, LocalDate date, String owner) {
+        public Invite(String name, LocalDateTime date, String owner) {
             this.name = name;
             this.date = date;
             this.owner = owner;
@@ -53,11 +53,15 @@ public class Appointment {
         ON_TIME;
     }
 
-    public Appointment(String name, LocalDate date, String owner, Reminder reminder, HashMap<String, Reminder> attendees) {
+    public Appointment(String name, LocalDateTime date, String owner, Reminder reminder, HashMap<String, Reminder> attendees) {
         this.name = name;
         this.date = date;
         this.owner = owner;
         this.reminder = reminder;
         this.attendees = attendees;
+    }
+    
+    public Invite getInvite(String atendeeName) {
+        return new Invite(atendeeName, this.date, this.owner);
     }
 }

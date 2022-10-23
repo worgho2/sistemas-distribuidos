@@ -4,21 +4,25 @@
  */
 package trabalho.dois.servidor;
 
+import java.rmi.RemoteException;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 import trabalho.dois.servidor.shared.*;
+import trabalho.dois.servidor.shared.Appointment.*;
 
 /**
  *
  * @author otavio
  */
 public class CalendarManager {
-    private Security security;
+    private final Security security;
+    private final ReminderScheduler reminderScheduler;
     private final HashMap<String, ClientInterface> clientNamesClientInterfaces;
     private final LinkedList<Appointment> appointments;
     
     public CalendarManager(Security security) {
+        this.reminderScheduler = new ReminderScheduler();
         this.security = security;
         this.clientNamesClientInterfaces = new HashMap<>();
         this.appointments = new LinkedList<>();
@@ -31,14 +35,39 @@ public class CalendarManager {
     public void createAppointment(String clientName, Appointment appointment) {
         this.appointments.push(appointment);
         
-        if (appointment.reminder != Appointment.Reminder.DISABLED) {
-             // TODO: create owner reminder
+        if (appointment.reminder != Appointment.Reminder.DISABLED && clientNamesClientInterfaces.containsKey(clientName)) {
+            this.reminderScheduler.schedule(appointment.reminder, clientName, clientNamesClientInterfaces.get(clientName), appointment);
         }
         
-        if (!appointment.attendees.isEmpty()) {
-            // TODO: send confirmation message to all clients
-            // If a success response was received, set the timer if enabled and the reminder field
-            // Else remove the user form the appointment
+        for (String attendeeName : appointment.attendees.keySet()) {
+            Timer timer = new Timer();
+            TimerTask timerTask = new TimerTask() {
+                @Override
+                public void run() {
+                    try {
+                        if (clientNamesClientInterfaces.containsKey(attendeeName)) {
+                            ClientInterface cli = clientNamesClientInterfaces.get(attendeeName);
+                            byte[] signature = security.generateSignature(attendeeName);
+                            Invite invite = appointment.getInvite(attendeeName);
+                            InviteResponse response = cli.onAppointmentInvite(invite, signature);
+
+                            for (Appointment app : appointments) {
+                                if (app.name.equals(appointment.name)) {
+                                    if (response.accepted) {
+                                        app.attendees.put(attendeeName, response.reminder);
+                                        reminderScheduler.schedule(response.reminder, attendeeName, cli, app);
+                                    } else {
+                                        app.attendees.remove(attendeeName);
+                                    }
+                                }
+                            }
+                        }
+                    } catch (RemoteException e) {
+                        Logger.error("CalendarManager.createAppointment exception %s", e.getMessage());
+                    }
+                }
+            };
+            timer.schedule(timerTask, 0);
         }
     }
     
@@ -51,14 +80,32 @@ public class CalendarManager {
             if (currentApp.name.equals(appointmentName)) {
                 if (currentApp.owner.equals(clientName)) {
                     Appointment removedAppointment = this.appointments.remove(it.nextIndex());
-                    // TODO: notify all attendees the appointment was cancelled
-                    // TODO: cancel all reminders;
+                    this.reminderScheduler.cancel(clientName, currentApp);
+                    
+                    for (String attendeeName : currentApp.attendees.keySet()) {
+                        this.reminderScheduler.cancel(attendeeName, removedAppointment);
+                        
+                        Timer timer = new Timer();
+                        TimerTask timerTask = new TimerTask() {
+                            @Override
+                            public void run() {
+                                try {
+                                    if (clientNamesClientInterfaces.containsKey(attendeeName)) {
+                                        ClientInterface cli = clientNamesClientInterfaces.get(attendeeName);
+                                        cli.onAppointmentNotification("Appointment cancelled", currentApp);
+                                    }
+                                } catch (RemoteException e) {
+                                    Logger.error("CalendarManager.cancelAppointment exception %s", e.getMessage());
+                                }
+                            }
+                        };
+                        timer.schedule(timerTask, 0);
+                    }
 
                     return;
                 } else if (currentApp.attendees.containsKey(clientName)) {
                     currentApp.attendees.remove(clientName);
-                    // TODO: cancel client remider;
-
+                    this.reminderScheduler.cancel(clientName, currentApp);
                     return;
                 }
             }
@@ -74,13 +121,11 @@ public class CalendarManager {
             if (currentApp.name.equals(appointmentName)) {
                 if (currentApp.owner.equals(clientName)) {
                     currentApp.reminder = Appointment.Reminder.DISABLED;
-                    // TODO: Cancel owner reminder;
-
+                    this.reminderScheduler.cancel(clientName, currentApp);
                     return;
                 } else if (currentApp.attendees.containsKey(clientName)) {
                     currentApp.attendees.put(clientName, Appointment.Reminder.DISABLED);
-                    // TODO: Cancel atendee reminder
-
+                    this.reminderScheduler.cancel(clientName, currentApp);
                     return;
                 }
             }

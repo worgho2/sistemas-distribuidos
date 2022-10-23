@@ -12,7 +12,6 @@ import java.time.format.*;
  * @author otavio
  */
 public class Logger {
-
     public static String getLog(String level, String format, Object... args) {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss");
         LocalDateTime now = LocalDateTime.now();
