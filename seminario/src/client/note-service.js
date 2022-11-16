@@ -13,7 +13,7 @@ const noteDefinition = grpc.loadPackageDefinition(protoObject);
 /**
  * Inicialização do cliente
  */
-const client = new noteDefinition.NoteService('localhost:50051', grpc.credentials.createInsecure());
+const client = new noteDefinition.NoteService('localhost:3030', grpc.credentials.createInsecure());
 
 /**
  * rpc List (Void) returns (NoteListResponse);

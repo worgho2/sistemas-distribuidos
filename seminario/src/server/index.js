@@ -16,7 +16,7 @@ server.addService(...noteService);
 /**
  * Inicialização do server
  */
-server.bindAsync('0.0.0.0:50051', grpc.ServerCredentials.createInsecure(), (_, port) => {
+server.bindAsync('0.0.0.0:3030', grpc.ServerCredentials.createInsecure(), (_, port) => {
     server.start();
     console.log(`Server started on port ${port}`);
 });
