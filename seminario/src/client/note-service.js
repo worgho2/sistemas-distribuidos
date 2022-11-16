@@ -7,13 +7,18 @@ import { fileURLToPath } from 'node:url';
  * Carregamento do proto dinamicamente
  */
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const protoObject = protoLoader.loadSync(path.resolve(__dirname, '../../proto/note-service.proto'));
+const protoObject = protoLoader.loadSync(
+    path.resolve(__dirname, '../../proto/note-service.proto')
+);
 const noteDefinition = grpc.loadPackageDefinition(protoObject);
 
 /**
  * Inicialização do cliente
  */
-const client = new noteDefinition.NoteService('localhost:3030', grpc.credentials.createInsecure());
+const client = new noteDefinition.NoteService(
+    'localhost:3030',
+    grpc.credentials.createInsecure()
+);
 
 /**
  * rpc List (Void) returns (NoteListResponse);

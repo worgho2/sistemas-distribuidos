@@ -8,7 +8,9 @@ import * as noteRepository from './note-repository.js';
  * Carregamento do proto dinamicamente
  */
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const protoObject = protoLoader.loadSync(path.resolve(__dirname, '../../proto/note-service.proto'));
+const protoObject = protoLoader.loadSync(
+    path.resolve(__dirname, '../../proto/note-service.proto')
+);
 const noteDefinition = grpc.loadPackageDefinition(protoObject);
 
 /**
@@ -61,4 +63,7 @@ function DeleteById({ request: { id } }, callback) {
     }
 }
 
-export default [noteDefinition.NoteService.service, { List, GetById, Create, DeleteById }];
+export default [
+    noteDefinition.NoteService.service,
+    { List, GetById, Create, DeleteById }
+];
