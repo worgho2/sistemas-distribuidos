@@ -46,8 +46,8 @@ const ScansProvider: React.FC<PropsWithChildren> = ({ children }) => {
 
     const register = async (clientName_: string) => {
         try {
-            setClientName(clientName_);
             const response = await calendarService.register(clientName_);
+            setClientName(clientName_);
             setPublicKey(response.publicKey);
 
             calendarService.listenToInvites(clientName_, response.publicKey, async (invite) => {
