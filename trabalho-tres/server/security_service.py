@@ -8,7 +8,7 @@ class SecurityService():
         self.keyPair = RSA.generate(1024)
 
     def get_public_key(self):
-        return self.keyPair.publickey().export_key()
+        return self.keyPair.publickey().export_key().decode("utf-8")
 
     def create_signature(self, client_name: str):
         message = client_name.encode("utf-8")
