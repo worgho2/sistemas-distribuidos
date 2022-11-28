@@ -7,10 +7,10 @@ class SecurityService():
     def __init__(self) -> None:
         self.keyPair = RSA.generate(1024)
 
-    def get_public_key(self):
+    def get_public_key(self) -> str:
         return self.keyPair.publickey().export_key().decode("utf-8")
 
-    def create_signature(self, client_name: str):
+    def create_signature(self, client_name: str) -> str:
         message = client_name.encode("utf-8")
         hash = SHA256.new(message)
-        return pss.new(self.keyPair).sign(hash)
+        return pss.new(self.keyPair).sign(hash).hex()
