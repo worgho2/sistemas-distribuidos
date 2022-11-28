@@ -6,6 +6,7 @@ import * as calendarService from '../services/calendar';
 interface CalendarContextData {
     clientName?: string;
     publicKey?: string;
+    lastLoadedDate?: Date;
     appointments: Appointment[];
     appointmentInvites: AppointmentInvite[];
     appointmentReminders: AppointmentReminder[];
@@ -43,6 +44,7 @@ const ScansProvider: React.FC<PropsWithChildren> = ({ children }) => {
     const [appointmentInvites, setAppointmentInvites] = useState<AppointmentInvite[]>([]);
     const [appointmentReminders, setAppointmentReminders] = useState<AppointmentReminder[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
+    const [lastLoadedDate, setLastLoadedDate] = useState<Date | undefined>(undefined);
 
     const register = async (clientName_: string) => {
         try {
@@ -84,6 +86,7 @@ const ScansProvider: React.FC<PropsWithChildren> = ({ children }) => {
             setAppointments([]);
             const appointments = await calendarService.listAppointments(clientName);
             setAppointments(appointments);
+            setLastLoadedDate(new Date());
 
             setLoading(false);
         } catch (error) {
@@ -154,6 +157,7 @@ const ScansProvider: React.FC<PropsWithChildren> = ({ children }) => {
                 appointmentInvites,
                 appointmentReminders,
                 loading,
+                lastLoadedDate,
                 register,
                 loadAppointments,
                 createAppointment,

@@ -20,7 +20,7 @@ import { useCalendarContext } from '../../../../hooks/calendar-provider';
 import { Reminder } from '../../../../models/appointment';
 
 const AppointmentsPageToolbar: React.FC = () => {
-    const { appointments, loading, loadAppointments, createAppointment } = useCalendarContext();
+    const { appointments, loading, lastLoadedDate, loadAppointments, createAppointment } = useCalendarContext();
     const [createDialogOpen, setCreateDialogOpen] = useState<boolean>(false);
     const [name, setName] = useState<string>('');
     const [date, setDate] = useState<Date | undefined>(undefined);
@@ -32,6 +32,11 @@ const AppointmentsPageToolbar: React.FC = () => {
             <Typography variant="h6" sx={{ flex: '1 1 100%' }}>
                 Appointments {loading ? '' : `(${appointments.length})`}
             </Typography>
+            <Box component="div" sx={{ paddingRight: 2 }}>
+                <Typography color="GrayText" noWrap variant="caption">
+                    {lastLoadedDate !== undefined ? lastLoadedDate.toLocaleTimeString() : null}
+                </Typography>
+            </Box>
             <Box component="div" sx={{ paddingRight: 2 }}>
                 <LoadingButton
                     color="primary"
