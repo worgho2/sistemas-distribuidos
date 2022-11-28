@@ -53,7 +53,7 @@ const ScansProvider: React.FC<PropsWithChildren> = ({ children }) => {
             setPublicKey(response.publicKey);
 
             calendarService.listenToInvites(clientName_, response.publicKey, async (invite) => {
-                enqueueSnackbar(`Client ${invite.onwer} invited you to the ${invite.name} appointment`, 'success');
+                enqueueSnackbar(`Client ${invite.owner} invited you to the ${invite.name} appointment`, 'success');
                 setAppointmentInvites((old) => [...old, invite]);
             });
 

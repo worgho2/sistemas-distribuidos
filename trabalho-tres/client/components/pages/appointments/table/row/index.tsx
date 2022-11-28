@@ -11,6 +11,9 @@ const AppointmentsPageTableRow: React.FC<AppointmentsPageTableRowProps> = (props
     const { appointment } = props;
     const { cancelAppointment, updateAppointmentReminder } = useCalendarContext();
 
+    const attendees = appointment.attendees.join(', ');
+    const date = new Date(appointment.date);
+
     return (
         <React.Fragment>
             <TableRow>
@@ -18,12 +21,10 @@ const AppointmentsPageTableRow: React.FC<AppointmentsPageTableRowProps> = (props
                 <TableCell>{appointment.owner}</TableCell>
 
                 <TableCell>
-                    <Tooltip title={new Date(appointment.date).toISOString()}>
-                        <Typography>{new Date(appointment.date).toLocaleDateString('en-US')}</Typography>
-                    </Tooltip>
+                    <Typography>{`${date.toLocaleDateString('pt-BR')} ${date.toLocaleTimeString('pt-BR')}`}</Typography>
                 </TableCell>
 
-                <TableCell>{appointment.attendees.join(', ')}</TableCell>
+                <TableCell>{attendees.length === 0 ? '--' : attendees}</TableCell>
             </TableRow>
         </React.Fragment>
     );

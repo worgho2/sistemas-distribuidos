@@ -7,10 +7,10 @@ class Appointment(object):
         self.date = date
         self.owner = owner
         self.reminder = reminder
-        self.attendeess = dict()
+        self.attendees = dict()
 
         for attendee in attendees:
-            self.attendeess.update({attendee: 'PENDING'})
+            self.attendees.update({attendee: 'PENDING'})
 
     def to_json(self):
         return {
@@ -18,5 +18,5 @@ class Appointment(object):
             "date": self.date.isoformat(),
             "owner": self.owner,
             "reminder": self.reminder,
-            "attendees": list(self.attendeess.keys())
+            "attendees": list(self.attendees.keys())
         }

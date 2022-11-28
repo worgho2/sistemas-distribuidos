@@ -19,12 +19,18 @@ class CalendarService():
         if client_name not in self.clients:
             raise Exception("Client is not registered")
 
+        filtered_attendees: list[str] = []
+
+        for attendee in attendees:
+            if attendee in self.clients and attendee != client_name and attendee not in filtered_attendees:
+                filtered_attendees.append(attendee)
+
         appointment = Appointment(
             name=name,
             date=date,
             owner=client_name,
             reminder=reminder,
-            attendees=attendees
+            attendees=filtered_attendees
         )
 
         self.appointments.append(appointment)
@@ -35,29 +41,34 @@ class CalendarService():
             reminder=reminder
         )
 
-        for attendee in attendees:
-            if attendee in self.clients:
-                signature = self.security_service.create_signature(
-                    client_name=attendee)
+        for attendee in filtered_attendees:
+            signature = self.security_service.create_signature(
+                client_name=attendee)
 
-                self.notification_service.send_appointment_invite(
-                    client_name=attendee,
-                    appointment=appointment,
-                    signature=signature
-                )
+            self.notification_service.send_appointment_invite(
+                client_name=attendee,
+                appointment=appointment,
+                signature=signature
+            )
 
     def cancel_appointment(self, client_name: str, appointment_name: str):
         if client_name not in self.clients:
             raise Exception(f"Client {client_name} is not registered")
 
         for appointment in self.appointments:
-            if appointment.name is appointment_name:
-                if client_name is not appointment.owner:
+            if appointment.name == appointment_name:
+                if client_name == appointment.owner:
+                    self.appointments = list(
+                        filter(lambda x: x.name != appointment_name, self.appointments))
+                    self.notification_service.cancel_appointment_all_reminders(
+                        appointment_name)
+                elif client_name in appointment.attendees.keys():
+                    appointment.attendees.pop(client_name)
+                    self.notification_service.cancel_appointment_reminder(
+                        client_name, appointment_name)
+                else:
                     raise Exception(
-                        f"Client {client_name} is not the {appointment_name} appointment's owner")
-
-                self.notification_service.cancel_appointment_reminders(
-                    appointment=appointment)
+                        f"Client {client_name} is not in {appointment_name} appointment")
 
                 return
 
@@ -68,16 +79,16 @@ class CalendarService():
             raise Exception(f"Client {client_name} is not registered")
 
         for appointment in self.appointments:
-            if appointment.name is appointment_name:
-                if client_name is appointment.owner:
+            if appointment.name == appointment_name:
+                if client_name == appointment.owner:
                     appointment.reminder = reminder
                     self.notification_service.update_appointment_reminder(
                         client_name=client_name,
                         appointment=appointment,
                         reminder=reminder
                     )
-                elif client_name in appointment.attendeess.keys():
-                    appointment.attendeess.update({client_name: reminder})
+                elif client_name in appointment.attendees.keys():
+                    appointment.attendees.update({client_name: reminder})
                     self.notification_service.update_appointment_reminder(
                         client_name=client_name,
                         appointment=appointment,
@@ -98,7 +109,7 @@ class CalendarService():
         client_appointments: list[Appointment] = []
 
         for appointment in self.appointments:
-            if appointment.owner == client_name or client_name in appointment.attendeess.keys():
+            if appointment.owner == client_name or (client_name in appointment.attendees.keys() and appointment.attendees.get(client_name) != 'PENDING'):
                 client_appointments.append(appointment)
 
         return client_appointments
@@ -108,11 +119,11 @@ class CalendarService():
             raise Exception(f"Client {client_name} is not registered")
 
         for appointment in self.appointments:
-            if appointment.name is appointment_name:
-                if client_name in appointment.attendeess.keys():
-                    if appointment.attendeess.get(client_name) == "PENDING":
-                        if accept is True:
-                            appointment.attendeess.update(
+            if appointment.name == appointment_name:
+                if client_name in appointment.attendees.keys():
+                    if appointment.attendees.get(client_name) == "PENDING":
+                        if accept == True:
+                            appointment.attendees.update(
                                 {client_name: reminder})
                             self.notification_service.schedule_appointment_reminder(
                                 client_name=client_name,
@@ -120,7 +131,7 @@ class CalendarService():
                                 reminder=reminder
                             )
                         else:
-                            appointment.attendeess.pop(client_name)
+                            appointment.attendees.pop(client_name)
                     else:
                         raise Exception(
                             f"Client {client_name} has no pending invite for {appointment_name} appointment")

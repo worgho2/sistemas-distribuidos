@@ -17,13 +17,13 @@ export type Appointment = {
 export type AppointmentReminder = {
     name: string;
     date: Date;
-    onwer: string;
+    owner: string;
     reminder: Reminder;
 };
 
 export type AppointmentInvite = {
     name: string;
     date: Date;
-    onwer: string;
+    owner: string;
     signature: string;
 };
