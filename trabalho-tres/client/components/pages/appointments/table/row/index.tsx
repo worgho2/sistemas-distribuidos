@@ -1,7 +1,8 @@
 import React from 'react';
-import { TableCell, TableRow, Tooltip, Typography } from '@mui/material';
+import { IconButton, Stack, TableCell, TableRow, Typography } from '@mui/material';
 import { useCalendarContext } from '../../../../../hooks/calendar-provider';
 import { Appointment } from '../../../../../models/appointment';
+import { DeleteForever, Edit } from '@mui/icons-material';
 
 interface AppointmentsPageTableRowProps {
     appointment: Appointment;
@@ -25,6 +26,18 @@ const AppointmentsPageTableRow: React.FC<AppointmentsPageTableRowProps> = (props
                 </TableCell>
 
                 <TableCell>{attendees.length === 0 ? '--' : attendees}</TableCell>
+
+                <TableCell>
+                    <Stack direction="row">
+                        <IconButton onClick={() => {}}>
+                            <Edit color="info" />
+                        </IconButton>
+
+                        <IconButton onClick={() => cancelAppointment(appointment.name)}>
+                            <DeleteForever color="error" />
+                        </IconButton>
+                    </Stack>
+                </TableCell>
             </TableRow>
         </React.Fragment>
     );

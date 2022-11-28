@@ -22,6 +22,7 @@ const AppointmentsPageTable: React.FC = () => {
                         <TableCell>Owner</TableCell>
                         <TableCell>Date</TableCell>
                         <TableCell>Attendees</TableCell>
+                        <TableCell>Edit / Delete</TableCell>
                     </TableRow>
                 </TableHead>
                 <TableBody>

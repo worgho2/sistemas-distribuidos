@@ -69,7 +69,7 @@ const ScansProvider: React.FC<PropsWithChildren> = ({ children }) => {
                 setAppointmentReminders((old) => [...old, appointmentReminder]);
             });
 
-            enqueueSnackbar(`Client registered with success`, 'success');
+            enqueueSnackbar(`Client registered`, 'success');
         } catch (error) {
             enqueueSnackbar(error instanceof Error ? error.message : 'error', 'error');
         }
@@ -103,6 +103,7 @@ const ScansProvider: React.FC<PropsWithChildren> = ({ children }) => {
 
             await calendarService.createAppointment(clientName, { name, date, reminder, attendees });
             await loadAppointments();
+            enqueueSnackbar(`Appointment ${name} created`, 'success');
         } catch (error) {
             enqueueSnackbar(error instanceof Error ? error.message : 'error', 'error');
         }
@@ -116,6 +117,7 @@ const ScansProvider: React.FC<PropsWithChildren> = ({ children }) => {
 
             await calendarService.cancelAppointment(clientName, appointmentName);
             await loadAppointments();
+            enqueueSnackbar(`Appointment ${appointmentName} deleted`, 'success');
         } catch (error) {
             enqueueSnackbar(error instanceof Error ? error.message : 'error', 'error');
         }
@@ -129,6 +131,7 @@ const ScansProvider: React.FC<PropsWithChildren> = ({ children }) => {
 
             await calendarService.updateAppointmentReminder(clientName, appointmentName, { reminder });
             await loadAppointments();
+            enqueueSnackbar(`Updated ${appointmentName} appointment reminder`, 'success');
         } catch (error) {
             enqueueSnackbar(error instanceof Error ? error.message : 'error', 'error');
         }
@@ -140,9 +143,9 @@ const ScansProvider: React.FC<PropsWithChildren> = ({ children }) => {
             }
 
             await calendarService.answerAppointmentInvite(clientName, appointmentName, { accept, reminder });
-
-            // TODO: remover o invite
+            setAppointmentInvites((old) => old.filter((app) => app.name !== appointmentName));
             await loadAppointments();
+            enqueueSnackbar(`Answered ${appointmentName} appointment invite`, 'success');
         } catch (error) {
             enqueueSnackbar(error instanceof Error ? error.message : 'error', 'error');
         }
