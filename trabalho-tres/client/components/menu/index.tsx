@@ -69,13 +69,13 @@ const MainMenu: React.FC = () => {
             </Box>
 
             <Dialog open={clientName === undefined}>
-                <DialogTitle>Register Client</DialogTitle>
+                <DialogTitle>Register</DialogTitle>
                 <DialogContent>
                     <TextField
                         variant="outlined"
                         size="small"
                         margin="dense"
-                        label="Client Name"
+                        label="Name"
                         type="text"
                         fullWidth
                         autoFocus

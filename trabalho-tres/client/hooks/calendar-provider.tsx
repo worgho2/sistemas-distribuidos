@@ -137,6 +137,8 @@ const ScansProvider: React.FC<PropsWithChildren> = ({ children }) => {
             }
 
             await calendarService.answerAppointmentInvite(clientName, appointmentName, { accept, reminder });
+
+            // TODO: remover o invite
             await loadAppointments();
         } catch (error) {
             enqueueSnackbar(error instanceof Error ? error.message : 'error', 'error');
