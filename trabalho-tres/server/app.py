@@ -91,7 +91,8 @@ def list_appointments(client_name):
 
     return Response(
         json.dumps(
-            calendar_service.list_appointments(client_name=client_name)
+            list(map(lambda x: x.to_json(), calendar_service.list_appointments(
+                client_name=client_name)))
         ),
         status=200,
         mimetype='application/json'

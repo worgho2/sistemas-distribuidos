@@ -14,9 +14,9 @@ class NotificationService():
     def __get_timer_task_interval(self, date: datetime, reminder: str):
         minutes_to_subtract = 0
 
-        if reminder is "FIVE_MINUTES_BEFORE":
+        if reminder == "FIVE_MINUTES_BEFORE":
             minutes_to_subtract = 5
-        elif reminder is "TEN_MINUTES_BEFORE":
+        elif reminder == "TEN_MINUTES_BEFORE":
             minutes_to_subtract = 10
 
         date_with_offset = date - timedelta(minutes=minutes_to_subtract)

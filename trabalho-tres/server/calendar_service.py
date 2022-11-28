@@ -98,7 +98,7 @@ class CalendarService():
         client_appointments: list[Appointment] = []
 
         for appointment in self.appointments:
-            if appointment.owner is client_name or client_name in appointment.attendeess.keys():
+            if appointment.owner == client_name or client_name in appointment.attendeess.keys():
                 client_appointments.append(appointment)
 
         return client_appointments
@@ -110,7 +110,7 @@ class CalendarService():
         for appointment in self.appointments:
             if appointment.name is appointment_name:
                 if client_name in appointment.attendeess.keys():
-                    if appointment.attendeess.get(client_name) is "PENDING":
+                    if appointment.attendeess.get(client_name) == "PENDING":
                         if accept is True:
                             appointment.attendeess.update(
                                 {client_name: reminder})

@@ -18,5 +18,5 @@ class Appointment(object):
             "date": self.date.isoformat(),
             "owner": self.owner,
             "reminder": self.reminder,
-            "attendees": self.attendeess
+            "attendees": list(self.attendeess.keys())
         }
