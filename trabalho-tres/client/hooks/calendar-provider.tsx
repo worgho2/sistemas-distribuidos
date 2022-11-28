@@ -46,7 +46,6 @@ const ScansProvider: React.FC<PropsWithChildren> = ({ children }) => {
 
     const register = async (clientName_: string) => {
         try {
-            setLoading(true);
             setClientName(clientName_);
             const response = await calendarService.register(clientName_);
             setPublicKey(response.publicKey);
@@ -68,10 +67,9 @@ const ScansProvider: React.FC<PropsWithChildren> = ({ children }) => {
                 setAppointmentReminders((old) => [...old, appointmentReminder]);
             });
 
-            setLoading(false);
+            enqueueSnackbar(`Client registered with success`, 'success');
         } catch (error) {
             enqueueSnackbar(error instanceof Error ? error.message : 'error', 'error');
-            setLoading(false);
         }
     };
 

@@ -1,6 +1,18 @@
 import { MarkEmailUnread, NotificationsActive, Today } from '@mui/icons-material';
-import { Box, Drawer, List, Toolbar } from '@mui/material';
+import {
+    Box,
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    Drawer,
+    List,
+    TextField,
+    Toolbar,
+} from '@mui/material';
 import React, { useState } from 'react';
+import { useCalendarContext } from '../../hooks/calendar-provider';
 import AppointmentsPage from '../pages/appointments';
 import InvitesPage from '../pages/invites';
 import RemindersPage from '../pages/reminders';
@@ -10,6 +22,8 @@ const drawerWidth = 240;
 
 const MainMenu: React.FC = () => {
     const [selected, setSelected] = useState<string>('APPOINTMENTS');
+    const [newClientName, setNewClientName] = useState<string>('');
+    const { register, clientName } = useCalendarContext();
 
     return (
         <React.Fragment>
@@ -53,6 +67,37 @@ const MainMenu: React.FC = () => {
                 {selected === 'INVITES' ? <InvitesPage /> : null}
                 {selected === 'REMINDERS' ? <RemindersPage /> : null}
             </Box>
+
+            <Dialog open={clientName === undefined}>
+                <DialogTitle>Register Client</DialogTitle>
+                <DialogContent>
+                    <TextField
+                        variant="outlined"
+                        size="small"
+                        margin="dense"
+                        label="Client Name"
+                        type="text"
+                        fullWidth
+                        autoFocus
+                        onChange={(event) => {
+                            setNewClientName(event.target.value);
+                        }}
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button
+                        color="success"
+                        onClick={async () => {
+                            if (newClientName.length > 0) {
+                                await register(newClientName);
+                            }
+                        }}
+                        disabled={newClientName.length < 1}
+                    >
+                        Register
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </React.Fragment>
     );
 };
