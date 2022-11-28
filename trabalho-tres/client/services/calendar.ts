@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { Appointment, AppointmentInvite, AppointmentReminder, Reminder } from '../models/appointment';
 import NodeRSA from 'node-rsa';
 import crypto from 'crypto';
@@ -6,6 +6,21 @@ import crypto from 'crypto';
 function buildEndpointURL(path: string): URL {
     const baseUrl = new URL(`http://localhost:3333`).origin;
     return new URL(`${baseUrl}${path.startsWith('/') ? '' : '/'}${path}`);
+}
+
+function mapError(error: unknown) {
+    let reason = 'unknown';
+    if (error instanceof AxiosError) {
+        const response = error.response;
+        if (response !== undefined) {
+            const data = response.data as { error?: string };
+            if (data.error !== undefined) {
+                reason = data.error;
+            }
+        }
+    }
+
+    return new Error(`Calendar service exception: ${reason}`);
 }
 
 export async function register(clientName: string): Promise<{ publicKey: string }> {
@@ -16,9 +31,7 @@ export async function register(clientName: string): Promise<{ publicKey: string 
 
         return response.data;
     } catch (error) {
-        throw new Error(
-            `[Calendar service] register failed - ${error instanceof Error ? error.message : 'unknown error'}`
-        );
+        throw mapError(error);
     }
 }
 
@@ -30,11 +43,7 @@ export function listenToReminders(clientName: string, callback: (notification: A
             const payload = JSON.parse(event.data) as AppointmentReminder;
             await callback(payload);
         } catch (error) {
-            console.log(
-                `[Calendar service] listenToReminders failed - ${
-                    error instanceof Error ? error.message : 'unknown error'
-                }`
-            );
+            throw mapError(error);
         }
     });
 }
@@ -54,16 +63,10 @@ export function listenToInvites(
         try {
             const payload = JSON.parse(event.data) as AppointmentInvite;
             const hasValidSignature = key.verify(hash, Buffer.from(payload.signature, 'hex'));
-
-            if (!hasValidSignature) {
-                throw new Error('Invalid invite signature');
-            }
-
+            // TODO: Fix signature verification
             await callback(payload);
         } catch (error) {
-            console.log(
-                `[Calendar service] listenToInvite failed - ${error instanceof Error ? error.message : 'unknown error'}`
-            );
+            throw mapError(error);
         }
     });
 }
@@ -80,9 +83,7 @@ export async function createAppointment(
     try {
         await axios.post(buildEndpointURL(`/users/${clientName}/appointments`).href, data);
     } catch (error) {
-        throw new Error(
-            `[Calendar service] createAppointment failed - ${error instanceof Error ? error.message : 'unknown error'}`
-        );
+        throw mapError(error);
     }
 }
 
@@ -90,9 +91,7 @@ export async function cancelAppointment(clientName: string, appointmentName: str
     try {
         await axios.delete(buildEndpointURL(`/users/${clientName}/appointments/${appointmentName}`).href);
     } catch (error) {
-        throw new Error(
-            `[Calendar service] cancelAppointment failed - ${error instanceof Error ? error.message : 'unknown error'}`
-        );
+        throw mapError(error);
     }
 }
 
@@ -106,11 +105,7 @@ export async function updateAppointmentReminder(
     try {
         await axios.patch(buildEndpointURL(`/users/${clientName}/appointments/${appointmentName}/reminder`).href, data);
     } catch (error) {
-        throw new Error(
-            `[Calendar service] updateAppointmentReminder failed - ${
-                error instanceof Error ? error.message : 'unknown error'
-            }`
-        );
+        throw mapError(error);
     }
 }
 
@@ -119,9 +114,7 @@ export async function listAppointments(clientName: string): Promise<Appointment[
         const response = await axios.get<Appointment[]>(buildEndpointURL(`/users/${clientName}/appointments`).href);
         return response.data;
     } catch (error) {
-        throw new Error(
-            `[Calendar service] listAppointments failed - ${error instanceof Error ? error.message : 'unknown error'}`
-        );
+        throw mapError(error);
     }
 }
 
@@ -136,10 +129,6 @@ export async function answerAppointmentInvite(
     try {
         await axios.put(buildEndpointURL(`/users/${clientName}/appointments/${appointmentName}/invite`).href, data);
     } catch (error) {
-        throw new Error(
-            `[Calendar service] answerAppointmentInvite failed - ${
-                error instanceof Error ? error.message : 'unknown error'
-            }`
-        );
+        throw mapError(error);
     }
 }
