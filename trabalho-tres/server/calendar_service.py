@@ -2,11 +2,12 @@ from datetime import datetime
 from notification_service import NotificationService
 from security_service import SecurityService
 from appointment import Appointment
+from flask import Flask
 
 
 class CalendarService():
-    def __init__(self, security_service: SecurityService) -> None:
-        self.notification_service = NotificationService()
+    def __init__(self, security_service: SecurityService, app: Flask) -> None:
+        self.notification_service = NotificationService(app)
         self.security_service = security_service
         self.clients: list[str] = []
         self.appointments: list[Appointment] = []

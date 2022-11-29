@@ -62,12 +62,11 @@ export function listenToInvites(
             try {
                 const isValidSignature = forgePublicKey.verify(md.digest().bytes(), payload.signature);
                 if (!isValidSignature) {
-                    throw new Error('Invalid Signature');
+                    new Error('Signature does not match');
                 }
             } catch {
-                console.log('Signature is invalid');
+                new Error('Invalid Signature');
             }
-
             await callback(payload);
         } catch (error) {
             console.log(error);

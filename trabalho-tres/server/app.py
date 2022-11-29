@@ -5,6 +5,7 @@ from dateutil import parser
 import json
 from calendar_service import CalendarService
 from security_service import SecurityService
+import traceback
 
 app = Flask(__name__)
 CORS(app)
@@ -13,7 +14,7 @@ app.register_blueprint(sse, url_prefix="/events/stream")
 app.app_context().push()
 
 security_service = SecurityService()
-calendar_service = CalendarService(security_service=security_service)
+calendar_service = CalendarService(security_service=security_service, app=app)
 
 
 @app.route("/users/register", methods=["POST"])
@@ -30,6 +31,7 @@ def register_user():
         public_key = security_service.get_public_key()
         return jsonify({"publicKey": public_key}), 200
     except Exception as e:
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 400
 
 
@@ -56,6 +58,7 @@ def create_appointment(client_name):
 
         return jsonify({"status": "ok"}), 200
     except Exception as e:
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 400
 
 
@@ -72,6 +75,7 @@ def cancel_appointment(client_name, appointment_name):
 
         return jsonify({"status": "ok"}), 200
     except Exception as e:
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 400
 
 
@@ -94,6 +98,7 @@ def update_appointment_reminder(client_name, appointment_name):
 
         return jsonify({"status": "ok"}), 200
     except Exception as e:
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 400
 
 
@@ -111,6 +116,7 @@ def list_appointments(client_name):
             mimetype='application/json'
         )
     except Exception as e:
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 400
 
 
@@ -135,6 +141,7 @@ def answer_appointment_invite(client_name, appointment_name):
 
         return jsonify({"status": "ok"}), 200
     except Exception as e:
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 400
 
 
