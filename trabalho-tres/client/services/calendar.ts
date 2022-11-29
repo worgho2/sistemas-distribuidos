@@ -1,7 +1,6 @@
 import axios, { AxiosError } from 'axios';
 import { Appointment, AppointmentInvite, AppointmentReminder, Reminder } from '../models/appointment';
-import NodeRSA from 'node-rsa';
-import crypto from 'crypto';
+import forge from 'node-forge';
 
 function buildEndpointURL(path: string): URL {
     const baseUrl = new URL(`http://localhost:3333`).origin;
@@ -20,7 +19,7 @@ function mapError(error: unknown) {
         }
     }
 
-    return new Error(`Calendar service exception: ${reason}`);
+    return Error(`Calendar service exception: ${reason}`);
 }
 
 export async function register(clientName: string): Promise<{ publicKey: string }> {
@@ -43,7 +42,7 @@ export function listenToReminders(clientName: string, callback: (notification: A
             const payload = JSON.parse(event.data) as AppointmentReminder;
             await callback(payload);
         } catch (error) {
-            throw mapError(error);
+            console.log(error);
         }
     });
 }
@@ -54,19 +53,24 @@ export function listenToInvites(
     callback: (notification: AppointmentInvite) => Promise<void>
 ) {
     const eventSource = new EventSource(buildEndpointURL(`/events/stream`));
-
-    const key = new NodeRSA();
-    key.importKey(publicKey);
-    const hash = crypto.createHash('sha256').update(clientName).digest();
+    const forgePublicKey = forge.pki.publicKeyFromPem(publicKey);
+    const md = forge.md.sha256.create().update(clientName, 'utf8');
 
     eventSource.addEventListener(`invites-${clientName}`, async (event) => {
         try {
             const payload = JSON.parse(event.data) as AppointmentInvite;
-            const hasValidSignature = key.verify(hash, Buffer.from(payload.signature, 'hex'));
-            // TODO: Fix signature verification
+            try {
+                const isValidSignature = forgePublicKey.verify(md.digest().bytes(), payload.signature);
+                if (!isValidSignature) {
+                    throw new Error('Invalid Signature');
+                }
+            } catch {
+                console.log('Signature is invalid');
+            }
+
             await callback(payload);
         } catch (error) {
-            throw mapError(error);
+            console.log(error);
         }
     });
 }

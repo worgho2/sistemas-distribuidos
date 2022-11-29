@@ -1,6 +1,7 @@
 from Crypto.Hash import SHA256
 from Crypto.PublicKey import RSA
 from Crypto.Signature import pss
+import binascii
 
 
 class SecurityService():
@@ -13,4 +14,5 @@ class SecurityService():
     def create_signature(self, client_name: str) -> str:
         message = client_name.encode("utf-8")
         hash = SHA256.new(message)
-        return pss.new(self.keyPair).sign(hash).hex()
+        signature = pss.new(self.keyPair).sign(hash)
+        return str(binascii.b2a_base64(signature), 'utf-8')
